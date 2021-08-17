@@ -23,16 +23,28 @@ int main(int argc, const char * argv[]) {
 ```
 
 ### Compilation
+```bash
 cd Hello
 ls         // main.m
+```
 
 Compile main.m with the following command:
+```bash
 clang -fobjc-arc  -framework Foundation main.m
+```
 
-Run with ./a.out
-
-or clang -fobjc-arc main.m -o main
-Run with ./main
+Run with:
+```bash
+ ./a.out
+```
+or: 
+```bash
+clang -fobjc-arc main.m -o main
+```
+Run with:
+```bash
+ ./main
+ ```
 
 ### Autoreleasepool context
 The autoreleasepool is a mechanism that allows the system to efficiently manage the memory 
@@ -61,11 +73,9 @@ int main(int argc, const char * argv[]) {
         NSLog(@"The fraction is: ");
         [fraction print];
     }
-    
     return 0;
 }
 ```
-
 
 ```objc
 // main.m
@@ -88,7 +98,6 @@ int main(int argc, const char * argv[]) {
         NSLog(@"The fraction is: ");
         [fraction print];
     }
-    
     return 0;
 }
 ```
@@ -259,8 +268,6 @@ if (location != NSNotFound) {
     found = YES;
 }
 ```
-
-
 
 ## Memory Management
 
