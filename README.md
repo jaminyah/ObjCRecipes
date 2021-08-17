@@ -122,7 +122,6 @@ Fraction *fraction = [[Fraction alloc] init];  // Also Fraction *fraction = [Fra
 [fraction print];
 ```
 (+) Indicates that the method is a class method. 
-+ (Fraction) add: (Fraction) f1: (Fraction) f2; 
 
 ## NSMutableArray
 
