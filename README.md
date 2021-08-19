@@ -544,9 +544,9 @@ void blockFunc(void (^f)(void)) {
 ```objc
 #import <Foundation/Foundation.h>
 
-typedef void (^greetBlock)(void);
+typedef void (^greet_t)(void);
 
-void blockFunc(greetBlock);
+void blockFunc(greet_t);
 
 int main(int argc, char * argv[]) {
     @autoreleasepool {
@@ -568,9 +568,9 @@ void blockFunc(void (^f)(void)) {
 ```objc
 #import <Foundation/Foundation.h>
 
-typedef int (^AddBlockType)(int, int);
+typedef int (^add_t)(int, int);
 
-int blockFunc(AddBlockType);
+int blockFunc(add_t);
 
 int main(int argc, char * argv[]) {
     @autoreleasepool {
@@ -585,7 +585,7 @@ int main(int argc, char * argv[]) {
     return 0;
 }
 
-int blockFunc(AddBlockType add) {
+int blockFunc(add_t add) {
     NSLog(@"In block function.");
     
     int a = 2, b = 7;
@@ -599,9 +599,9 @@ int blockFunc(AddBlockType add) {
 ```objc
 #import <Foundation/Foundation.h>
 
-typedef int (^AddBlockType)(int, int);
+typedef int (^add_t)(int, int);
 
-int blockFunc(AddBlockType);
+int blockFunc(add_t);
 
 int main(int argc, char * argv[]) {
     @autoreleasepool {
@@ -613,7 +613,7 @@ int main(int argc, char * argv[]) {
     return 0;
 }
 
-int blockFunc(AddBlockType add) {
+int blockFunc(add_t add) {
     NSLog(@"In block function.");
     
     int a = 2, b = 7;
@@ -627,8 +627,8 @@ int blockFunc(AddBlockType add) {
 return-type (^block-name)(block-in-params)) (return-block-in-params);
 ```
 
-2.13 Block returning a block example
-Return type - NSArray (^)(NSMutableArray) </br>
+2.13 Block returning a block example <br/>
+Return type - NSArray (^)(NSMutableArray) <br/>
 Block name - sortAlgo <br/>
 Block input param - NSString * <br/>
 
