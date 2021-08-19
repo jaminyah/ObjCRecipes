@@ -3,6 +3,7 @@
 ## References:
 1. Programming in Objective-C, 6th Edition
 2. https://www.journaldev.com/10182/nsarray-nsmutablearray-objective-c-array
+3. https://code.tutsplus.com/tutorials/understanding-objective-c-blocks--mobile-14319
 
 ```bash
 1. Compiling and Running
@@ -19,12 +20,14 @@
 1.5 Type Casting
 1.5.1 NSUInteger to int
 
-2. Concurrency
-2.1 NSThread
-2.2 Thread Pool
+2. Blocks
 
-3. Memory Management
-3.1 Autorelease Pool
+3. Concurrency
+3.1 NSThread
+3.2 Thread Pool
+
+4. Memory Management
+4.1 Autorelease Pool
 
 ```
 
@@ -364,10 +367,11 @@ NSMutableArray* moveZeros(NSMutableArray *array) {
 typedef long miles_t;             // Renames type long to miles_t locally
 ```
 
-> typealias 
+> typealias asssigns a local name to a type
+
 1.4.1 Convert NSUInteger to integer
 ```c
-typealias distance_t = long;      // Assigns a local name to be of a certain type
+typealias distance_t = long;      // Assigns a local name to a type
 ```
 
 Per the Apple documentation, NSUInteger is a typedef of an unsigned long. A 64-bit application treats NSUInteger as a 64-bit unsigned integer.
@@ -389,10 +393,263 @@ NSUInteger returns a 64-bit integer value which becomes truncated on a 32-bit sy
 ```
 
 
-2. Concurrency
+2. Blocks
 
+2.1 General syntax
+
+```bash
+block pointer = block literal
+```
+
+```objc
+return-type (^blockName)(in-params) = ^(in-params) {
+
+    // function body
+
+    return returntype;
+}
+```
+
+2.2 Block pointer and block literal
+```objc
+int (^add)(int, int) = ^(int a, int b) {
+    return (a + b);
+}
+```
+
+2.3 Using separate statements for block pointer and block literal.
+```objc
+#import <Foundation/Foundation.h>
+
+int main(int argc, char * argv[]) {
+    @autoreleasepool {
+        
+        double (^g)(double, double);
+        g = ^(double m, double n) { return m * n; };
+        
+        double product = g(2, 5);
+        NSLog(@"%.2f", product);
+    }
+}
+```
+
+2.4 Define and use a function block.
+```objc
+#import <Foundation/Foundation.h>
+
+void blockFunc(void (^)(void));
+
+int main(int argc, char * argv[]) {
+    @autoreleasepool {
+        
+        // define the block function
+        int (^threeMultiply)(int, int, int) = ^(int i, int j, int k) {
+            int product = i * j * k;
+            return product;
+        };
+        
+        int x = 4, y = 8, z = 3;
+        int result = threeMultiply(x, y, z);
+        NSLog(@"%d", result);
+    }
+}
+```
+
+2.5 Calling a function that take a block as parameter.
+```objc
+#import <UIKit/UIKit.h>
+
+void blockFunc(void (^)(void));
+
+int main(int argc, char * argv[]) {
+    @autoreleasepool {
+        
+        void (^f)(void) = ^(){ NSLog(@"Hello function f"); };
+        blockFunc(f);
+    }
+}
+
+void blockFunc(void (^g)(void)) {
+    NSLog(@"In blockFunc");
+    g();
+}
+```
+
+2.6 Calling with a block literal as parameter
+```objc
+#import <Foundation/Foundation.h>
+
+void blockFunc(void (^)(void));
+
+int main(int argc, char * argv[]) {
+    @autoreleasepool {
+        
+        // Calling with a block literal
+        blockFunc(^{ NSLog(@"Hello, World!");});
+    }
+    return 0;
+}
+
+void blockFunc(void (^f)(void)) {
+    NSLog(@"In block function.");
+    f();
+}
+```
+
+2.7 Error - none execution of the block parameter
+```objc
+#import <Foundation/Foundation.h>
+
+void blockFunc(void (^)(void));
+
+int main(int argc, char * argv[]) {
+    @autoreleasepool {
+        
+        // Calling with a block literal
+        blockFunc(^{ NSLog(@"Hello, World!");});
+    }
+    return 0;
+}
+
+void blockFunc(void (^f)(void)) {
+    NSLog(@"In block function.");
+    // f();                         /* Block param will not be called */
+}
+
+```
+
+2.8 Using a block typedef with a block literal.
+```objc
+#import <Foundation/Foundation.h>
+
+typedef void (^greetBlock)(void);
+void blockFunc(greetBlock);
+
+int main(int argc, char * argv[]) {
+    @autoreleasepool {
+        
+        // Calling with a block literal
+        blockFunc(^{ NSLog(@"Hello, World!");});
+    }
+    return 0;
+}
+
+void blockFunc(void (^f)(void)) {
+    NSLog(@"In block function.");
+    f();
+}
+```
+
+2.9 Using a block typedef with a block definition.
+```objc
+#import <Foundation/Foundation.h>
+
+typedef void (^greetBlock)(void);
+
+void blockFunc(greetBlock);
+
+int main(int argc, char * argv[]) {
+    @autoreleasepool {
+        
+        // Calling with a block definition
+        void (^helloWorld)(void) = ^{NSLog(@"Hello, Blocks World!");};
+        blockFunc(helloWorld);
+    }
+    return 0;
+}
+
+void blockFunc(void (^f)(void)) {
+    NSLog(@"In block function.");
+    f();
+}
+```
+
+2.10 Passing in a block pointer with parameters
+```objc
+#import <Foundation/Foundation.h>
+
+typedef int (^AddBlockType)(int, int);
+
+int blockFunc(AddBlockType);
+
+int main(int argc, char * argv[]) {
+    @autoreleasepool {
+        
+        // Create block pointer and block literal
+        int (^sumInts)(int, int) = ^(int x, int y) { return (x + y); };
+        
+        // Passing block pointer as paramater
+        int result = blockFunc(sumInts);
+        NSLog(@"result: %d", result);
+    }
+    return 0;
+}
+
+int blockFunc(AddBlockType add) {
+    NSLog(@"In block function.");
+    
+    int a = 2, b = 7;
+    int output = add(a, b);
+    
+    return output;
+}
+```
+
+2.11 Passing in a block literal as parameter
+```objc
+#import <Foundation/Foundation.h>
+
+typedef int (^AddBlockType)(int, int);
+
+int blockFunc(AddBlockType);
+
+int main(int argc, char * argv[]) {
+    @autoreleasepool {
+        
+        // Passing block literal as paramater
+        int result = blockFunc(^(int x, int y) { return (x + y);});
+        NSLog(@"result: %d", result);
+    }
+    return 0;
+}
+
+int blockFunc(AddBlockType add) {
+    NSLog(@"In block function.");
+    
+    int a = 2, b = 7;
+    int output = add(a, b);
+    
+    return output;
+}
+```
+2.12 Returning a block syntax
+```objc
+return-type (^block-name)(block-in-params)) (return-block-in-params);
+```
+
+2.13 Block returning a block example
+Return type - NSArray (^)(NSMutableArray) </br>
+Block name - sortAlgo <br/>
+Block input param - NSString * <br/>
+
+```objc
+NSArray (^sortAlgo(NSString *)) (NSMutableArray);
+```
+
+2.2 NSThread
+
+
+2.3 Grand Central Dispatch (GCD)
 
 3. Memory Management
+
+```objc
+- (void) setName: (NSString *) name {
+    [_name release];
+    _name = name;
+    [_name retain];
+}
+```
 
 3.1 Autoreleasepool Context
 
