@@ -680,12 +680,12 @@ Block name - sortAlgo <br/>
 Block input param - NSString * <br/>
 
 ```objc
-NSArray (^sortAlgo(NSString *)) (NSMutableArray);
+NSArray* (^sortAlgo(NSString *)) (NSMutableArray);
 ```
 
 Using a block as return-type
 ```objc
-typdef NSArray (^algo_t)(NSMutableArray);
+typdef NSArray* (^algo_t)(NSMutableArray);
 
 
 ```
