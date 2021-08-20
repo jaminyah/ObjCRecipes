@@ -674,7 +674,61 @@ int blockFunc(add_t add) {
 return-type (^block-name)(block-in-params)) (return-block-in-params);
 ```
 
-2.13 Block returning a block example <br/>
+2.13 Return basic math functions using blocks
+```objc
+
+#import <Foundation/Foundation.h>
+
+typedef int (^math_t)(int, int);
+
+math_t mathOperation(NSString *mathFunc);
+
+int main(int argc, char * argv[]) {
+    @autoreleasepool {
+        
+        math_t mathOp = mathOperation(@"Add");
+        int sum = mathOp(6, 9);
+
+        mathOp = mathOperation(@"Mul");
+        int diff = mathOp(9, 6);
+        
+        NSLog(@"mathOp(6, 9): %d", sum);
+        NSLog(@"mathOp(9, 6): %d", diff);
+    }
+}
+
+math_t mathOperation(NSString *mathFunc) {
+    
+    if ([mathFunc isEqualToString:@"Add"]) {
+        return ^(int a, int b) {
+            return (a + b);
+        };
+    } else if ([mathFunc isEqualToString:@"Sub"]) {
+        return ^(int a, int b) {
+            return (a - b);
+        };
+    } else if ([mathFunc isEqualToString:@"Mul"]) {
+        return ^(int a, int b) {
+            return (a * b);
+        };
+    } else if ([mathFunc isEqualToString:@"Div"]) {
+        return ^(int a, int b) {
+            if (b == 0) {
+                return -999;
+            } else {
+                return (a / b);
+            }
+        };
+    } else {
+        return ^(int a, int b) {
+            return -999;
+        };
+    }
+}
+```
+
+
+2.14 Use blocks to return a sort function. <br/>
 Return type - NSArray (^)(NSMutableArray) <br/>
 Block name - sortAlgo <br/>
 Block input param - NSString * <br/>
