@@ -564,6 +564,53 @@ void blockFunc(void (^f)(void)) {
 }
 ```
 
+2.10 Using a block typedef with a helloWorld literal
+```objc
+#import <Foundation/Foundation.h>
+
+typedef void (^greet_t)(void);
+
+void blockFunc(greet_t);
+
+int main(int argc, char * argv[]) {
+    @autoreleasepool {
+        
+        // Using a block typedef
+        greet_t helloWorld = ^{NSLog(@"Hello, Blocks World!");};
+        blockFunc(helloWorld);
+    }
+    return 0;
+}
+
+void blockFunc(void (^f)(void)) {
+    NSLog(@"In block function.");
+    f();
+}
+``` 
+
+2.11 Declaring a block type <br/>
+
+Type name - sum_t <br/>
+In params - (int, int) <br/>
+Return type - int <br/>
+
+```objc
+typedef int (^sum_t)(int, int);
+```
+
+2.12 Declaring a block-type variable
+```objc
+int (^sum_t)(int, int) sum;
+```
+
+2.13 Using a block-type variable
+```objc
+int (^sum)(int, int);
+sum = ^(int x, int y) { return (x + y); };
+        
+NSLog(@"Sum: %d", sum(7, 11));
+```
+
 2.10 Passing in a block pointer with parameters
 ```objc
 #import <Foundation/Foundation.h>
@@ -634,6 +681,13 @@ Block input param - NSString * <br/>
 
 ```objc
 NSArray (^sortAlgo(NSString *)) (NSMutableArray);
+```
+
+Using a block as return-type
+```objc
+typdef NSArray (^algo_t)(NSMutableArray);
+
+
 ```
 
 2.2 NSThread
