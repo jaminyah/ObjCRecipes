@@ -4,6 +4,8 @@
 1. Programming in Objective-C, 6th Edition
 2. https://www.journaldev.com/10182/nsarray-nsmutablearray-objective-c-array
 3. https://code.tutsplus.com/tutorials/understanding-objective-c-blocks--mobile-14319
+4. https://www.techotopia.com/index.php/An_iOS_7_Graphics_Tutorial_using_Core_Graphics_and_Core_Image
+5. https://stackoverflow.com/questions/31693328/draw-multiple-lines-core-graphics
 
 ```bash
 1. Compiling and Running
@@ -28,6 +30,8 @@
 
 4. Memory Management
 4.1 Autorelease Pool
+
+5. Core Graphics
 
 ```
 
@@ -794,7 +798,7 @@ math_t mathOperation(MathFunc mathFunc) {
 }
 ```
 
-2.14 Use blocks to return a sort function. <br/>
+2.15 Use blocks to return a sort function. <br/>
 Return type - NSArray (^)(NSMutableArray) <br/>
 Block name - sortAlgo <br/>
 Block input param - NSString * <br/>
@@ -810,12 +814,13 @@ typdef NSArray* (^algo_t)(NSMutableArray *);
 
 ```
 
-2.2 NSThread
+3. Concurrency
+3.1 NSThread
+3.2 Thread Pool
 
+3.3 Grand Central Dispatch (GCD)
 
-2.3 Grand Central Dispatch (GCD)
-
-3. Memory Management
+4. Memory Management
 
 ```objc
 - (void) setName: (NSString *) name {
@@ -825,6 +830,159 @@ typdef NSArray* (^algo_t)(NSMutableArray *);
 }
 ```
 
-3.1 Autoreleasepool Context
+4.1 Autoreleasepool Context
 
 The autoreleasepool is a mechanism that allows the system to efficiently manage the memory your application uses as it creates new objects. Ownership of data is temporarily transferred to the run loop, for data that can be disposed at the end of the run loop cycle or should be claimed before the end of the loop cycle.
+
+5. Core Graphics
+ 
+ UIKit Core Graphics framework has Quartz 2D has its graphics drawing engine. Application developers interact with the Core Graphics framework using C based function calls. Drawing in a UIView is performed by the drawRect: method. 
+* setNeedDisplay - is used to force a redraw of the screen when the drawRect: method is not called automatically.
+* CGPoint - (width: CGFloat, height: CGFloat);
+
+5.1 Draw a line - using color space reference
+* Create a Cocoa Touch class named Draw2D and make it a subclass of UIView
+* Set the storyboard view to be of class Draw2D.
+
+Draw2D.h Header file
+```objc
+// Draw2D.h
+
+#import <UIKit/UIKit.h>
+
+NS_ASSUME_NONNULL_BEGIN
+@interface Draw2D : UIView
+
+@end
+NS_ASSUME_NONNULL_END
+```
+
+Draw2D.m Implementation file
+```objc
+#import "Draw2D.h"
+
+@implementation Draw2D
+
+- (void)drawRect:(CGRect)rect {
+    
+    // get context
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    // set line width
+    CGContextSetLineWidth(context, 2.0);
+    
+    // create a color reference
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    
+    // opaque red
+    CGFloat components[] = {1.0, 0.0, 0.0, 1.0};
+    CGColorRef color = CGColorCreate(colorSpace, components);
+    
+    // use color space ref and context
+    CGContextSetStrokeColorWithColor(context, color);
+    
+    CGSize screenSize = [UIScreen mainScreen].bounds.size;
+    CGFloat midPoint = screenSize.width / 2.0;
+    
+    // move to the start point to be drawn
+    CGContextMoveToPoint(context, midPoint, 0);
+    
+    // set end point
+    CGContextAddLineToPoint(context, midPoint, screenSize.height);
+    
+    // draw the line
+    CGContextStrokePath(context);
+    CGColorSpaceRelease(colorSpace);
+    CGColorRelease(color);
+}
+
+@end
+```
+5.2 Draw a line - using UIColor
+
+```objc
+#import "Draw2D.h"
+
+@implementation Draw2D
+
+- (void)drawRect:(CGRect)rect {
+    
+    // get context
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    // set line width
+    CGContextSetLineWidth(context, 2.0);
+       
+    // use uicolor
+    CGContextSetStrokeColorWithColor(context, [UIColor redColor].CGColor);
+    
+    CGSize screenSize = [UIScreen mainScreen].bounds.size;
+    CGFloat midPoint = screenSize.width / 2.0;
+    
+    // move to the start point
+    CGContextMoveToPoint(context, midPoint, 0);
+    
+    // set end point
+    CGContextAddLineToPoint(context, midPoint, screenSize.height);
+    
+    // draw the line
+    CGContextStrokePath(context);
+}
+@end
+```
+
+5.3 Draw a vertical line using UIBezierPath
+```objc
+#import "Draw2D.h"
+
+@implementation Draw2D
+
+- (void)drawRect:(CGRect)rect {
+    
+    // name several screen dimensions
+    CGSize screenSize = [UIScreen mainScreen].bounds.size;
+    CGFloat midPointX = screenSize.width / 2.0;
+    CGFloat endPointY = screenSize.height;
+    
+    // draw red line vertically centered
+    UIBezierPath *redline = [UIBezierPath bezierPath];
+    [redline moveToPoint:CGPointMake(midPointX, 0)];
+    [redline addLineToPoint:CGPointMake(midPointX, endPointY)];
+    [[UIColor redColor] set]; //Set color to red
+    [redline stroke];
+}
+
+@end
+```
+
+5.4 Draw horizontal and vertical lines using UIBezierPath
+```objc
+#import "Draw2D.h"
+
+@implementation Draw2D
+
+- (void)drawRect:(CGRect)rect {
+    
+    // name several screen dimensions
+    CGSize screenSize = [UIScreen mainScreen].bounds.size;
+    CGFloat midPointX = screenSize.width / 2.0;
+    CGFloat midPointY = screenSize.height / 2.0;
+    CGFloat endPointY = screenSize.height;
+    
+    // draw red line vertically centered
+    UIBezierPath *redline = [UIBezierPath bezierPath];
+    [redline moveToPoint:CGPointMake(midPointX, 0)];
+    [redline addLineToPoint:CGPointMake(midPointX, endPointY)];
+    [[UIColor redColor] set]; //Set color to red
+    [redline stroke];
+    
+    // draw blue line horizontally centered
+    UIBezierPath *blueline = [UIBezierPath bezierPath];
+    [blueline moveToPoint:CGPointMake(0, midPointY)];
+    [blueline addLineToPoint:CGPointMake(screenSize.width, midPointY)];
+    [[UIColor blueColor] set]; //Change color to blue
+    [blueline stroke];
+}
+@end
+```
+
