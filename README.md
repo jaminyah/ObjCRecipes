@@ -162,7 +162,7 @@ Reference:
 https://stackoverflow.com/questions/22153463/nsmutablearray-with-int-values-from-1-to-100
 
 1.3.2.1 Populate a mutable array with values from 0 - 19. <br/>
-Using <mark style="background-color: lightgray">addObject:@(i)</mark>
+Using <code>addObject:@(i)</code>
 
 ```objc
 //  main.m
@@ -184,8 +184,8 @@ int main(int argc, const char * argv[]) {
 }
 ```
 
-1.3.2.2 Populate a mutable array with values from 0 - 19.
-Using <mark style="background-color: lightgray">[[NSNumber alloc] initWithInt: i]</mark>
+1.3.2.2 Populate a mutable array with values from 0 - 19 <br/>
+Using <code>[[NSNumber alloc] initWithInt: i]</code>
 
 ```objc
 //  main.m
