@@ -161,8 +161,9 @@ Fraction *fraction = [[Fraction alloc] init];  // Also Fraction *fraction = [Fra
 Reference: 
 https://stackoverflow.com/questions/22153463/nsmutablearray-with-int-values-from-1-to-100
 
-Technique # 1
-1.3.2.1 Populate a mutable array with values from 0 - 19.
+1.3.2.1 Populate a mutable array with values from 0 - 19. <br/>
+Using <mark style="background-color: lightgray">addObject:@(i)</mark>
+
 ```objc
 //  main.m
 //  Populate a mutable array with values from 0 - 19
@@ -182,8 +183,10 @@ int main(int argc, const char * argv[]) {
     return 0;
 }
 ```
-Technique # 2
+
 1.3.2.2 Populate a mutable array with values from 0 - 19.
+Using <mark style="background-color: lightgray">[[NSNumber alloc] initWithInt: i]</mark>
+
 ```objc
 //  main.m
 //  Populate a mutable array with values from 0 - 19
@@ -690,10 +693,10 @@ int main(int argc, char * argv[]) {
         int sum = mathOp(6, 9);
 
         mathOp = mathOperation(@"Mul");
-        int diff = mathOp(9, 6);
+        int mul = mathOp(9, 6);
         
         NSLog(@"mathOp(6, 9): %d", sum);
-        NSLog(@"mathOp(9, 6): %d", diff);
+        NSLog(@"mathOp(9, 6): %d", mul);
     }
 }
 
@@ -727,6 +730,69 @@ math_t mathOperation(NSString *mathFunc) {
 }
 ```
 
+2.14 Refractoring the previous code to use enums
+```objc
+#import <Foundation/Foundation.h>
+
+typedef int (^math_t)(int, int);
+typedef NS_ENUM(NSUInteger, MathFunc) {
+    ADD,
+    SUB,
+    MUL,
+    DIV
+};
+
+math_t mathOperation(MathFunc mathFunc);
+
+int main(int argc, char * argv[]) {
+    @autoreleasepool {
+        math_t mathOp = mathOperation(ADD);
+        int sum = mathOp(6, 9);
+
+        mathOp = mathOperation(MUL);
+        int mul = mathOp(9, 6);
+        
+        NSLog(@"mathOp(6, 9): %d", sum);
+        NSLog(@"mathOp(9, 6): %d", mul);
+    }
+}
+
+math_t mathOperation(MathFunc mathFunc) {
+    
+    switch (mathFunc) {
+        case ADD:
+            NSLog(@"ADD");
+            return ^(int a, int b) {
+                return (a + b);
+            };
+            break;
+        case SUB:
+            NSLog(@"SUB");
+            return ^(int a, int b) {
+                return (a - b);
+            };
+            break;
+        case MUL:
+            NSLog(@"MUL");
+            return ^(int a, int b) {
+                return (a * b);
+            };
+            break;
+        case DIV:
+            NSLog(@"DIV");
+            return ^(int a, int b) {
+                if (b == 0) {
+                    return -999;
+                } else {
+                    return (a / b);
+                }
+            };
+            break;
+        default:
+            break;
+    }
+}
+```
 
 2.14 Use blocks to return a sort function. <br/>
 Return type - NSArray (^)(NSMutableArray) <br/>
