@@ -850,11 +850,9 @@ Draw2D.h Header file
 
 #import <UIKit/UIKit.h>
 
-NS_ASSUME_NONNULL_BEGIN
 @interface Draw2D : UIView
 
 @end
-NS_ASSUME_NONNULL_END
 ```
 
 Draw2D.m Implementation file
@@ -985,4 +983,95 @@ Draw2D.m Implementation file
 }
 @end
 ```
+5.5 Draw lines from left-side center across screen top
 
+```objc
+#import "Draw2D.h"
+
+@implementation Draw2D
+
+- (void)drawRect:(CGRect)rect {
+    
+    // name several screen dimensions
+    CGSize screenSize = [UIScreen mainScreen].bounds.size;
+    CGFloat midPointY = screenSize.height / 2.0;
+
+    // draw from left top-center
+    for (int i = 0; i <= screenSize.width; i += (screenSize.width/10)) {
+        UIBezierPath *redline = [UIBezierPath bezierPath];
+        [redline moveToPoint:CGPointMake(0, midPointY)];
+        [redline addLineToPoint:CGPointMake(i, 0)];
+        [[UIColor redColor] set]; //Set color to red
+        [redline stroke];
+    }
+}
+@end
+```
+5.6 Draw lines from left and right-size center across screen top
+```objc
+#import "Draw2D.h"
+
+@implementation Draw2D
+
+- (void)drawRect:(CGRect)rect {
+    
+    // name several screen dimensions
+    CGSize screenSize = [UIScreen mainScreen].bounds.size;
+    CGFloat midPointY = screenSize.height / 2.0;
+
+    // draw from left top-center
+    for (int i = 0; i <= screenSize.width; i += (screenSize.width/10)) {
+        UIBezierPath *redline = [UIBezierPath bezierPath];
+        [redline moveToPoint:CGPointMake(0, midPointY)];
+        [redline addLineToPoint:CGPointMake(i, 0)];
+        [[UIColor redColor] set]; //Set color to red
+        [redline stroke];
+    }
+    
+    // draw from right top-center
+    for (int i = 0; i <= screenSize.width; i += (screenSize.width/10)) {
+        UIBezierPath *blueline = [UIBezierPath bezierPath];
+        [blueline moveToPoint:CGPointMake(screenSize.width, midPointY)];
+        [blueline addLineToPoint:CGPointMake(i, 0)];
+        [[UIColor blueColor] set]; //Set color to red
+        [blueline stroke];
+    }
+}
+@end
+```
+
+5.7 Draw a closed path with UIBezierPath
+5.7.1 - Trapezoidal
+```objc
+#import "Draw2D.h"
+
+@implementation Draw2D
+
+- (void)drawRect:(CGRect)rect {
+    
+    CGSize screenSize = [UIScreen mainScreen].bounds.size;
+    CGFloat midX = screenSize.width / 2.0;
+    CGFloat midY = screenSize.height / 2.0;
+    CGFloat len = 200.0;                                      // longest side
+    
+    UIBezierPath *tapezoid = [UIBezierPath bezierPath];
+    
+    // Set the starting point of the shape.
+    [tapezoid moveToPoint:CGPointMake(midX, (midY - len/2.0))];
+    
+    // line to point 2
+    [tapezoid addLineToPoint:CGPointMake((midX + len/2.0), (midY - len/4.0))];
+    // line to point 3
+    [tapezoid addLineToPoint:CGPointMake((midX + len/2.0), (midY + len/4.0))];
+    // line to point 4
+    [tapezoid addLineToPoint:CGPointMake((midX - len/2.0), (midY + len/4.0))];
+    // line to point 5
+    [tapezoid addLineToPoint:CGPointMake(midX - len/2.0, (midY - len/4.0))];
+    
+    [tapezoid closePath];
+    
+    [[UIColor redColor] set];
+    [tapezoid stroke];
+}
+@end
+```
