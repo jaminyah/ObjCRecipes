@@ -6,6 +6,7 @@
 3. https://code.tutsplus.com/tutorials/understanding-objective-c-blocks--mobile-14319
 4. https://www.techotopia.com/index.php/An_iOS_7_Graphics_Tutorial_using_Core_Graphics_and_Core_Image
 5. https://stackoverflow.com/questions/31693328/draw-multiple-lines-core-graphics
+6. https://atozmath.com/example/CONM/Bisection.aspx?he=e&q=nr&ex=2
 
 ```bash
 1. Compiling and Running
@@ -799,7 +800,6 @@ math_t mathOperation(MathFunc mathFunc) {
 ```
 
 2.15 Pass a block into a function
-Example - 1
 ```objc
 #import <Foundation/Foundation.h>
 #include <math.h>
@@ -834,7 +834,28 @@ void mathFunc(int numArray[], int size, calc_t calc) {
 
 ```objc
 /* Find square root using Newton-Raphson method
- *  g1 = g0 - f(0)/ f'(0)
+ * g0 - initial guess of the square root
+ * g1 - Newton-Raphson improvement
+ * f(0) - Function with initial guess
+ * f'(0) - Derivative of function with initial guess
+ * g1 = g0 - f(0)/ f'(0)
+ * 
+ * Example: Find the square root of 10.
+ *
+ * let x = initial guess.
+ * then x = square_root(10) is the problem to solve.
+ * square both sides of the equation.
+ * x^2 = 10
+ * x^2 - 10 = 0
+ * let f(x) = x^2 - 10
+ * derivative f(x) = f'(x) = 2x
+ * Newton-Raphson formula:
+ * let x1 = new guess
+ * x1 = x - f(x)/ f'(x)
+ * giving, x1 = x - (x^2 - 10) / 2x
+ * then, x1 = 2x/2 - (x - 10/x)/2 = (x + 10/x)/2
+ * let n = input number 
+ * so in general, g1 = (g0 + n/g0)/2
  */
 
 #import <Foundation/Foundation.h>
@@ -869,12 +890,6 @@ double absVal(double n) {
 
 2.17 Newton-Raphson implementaton with blocks
 ```objc
-/* Find square root using Newton-Raphson method
- * g0 - initial guess of the square root
- * g1 - Newton-Raphson improvement
- * g1 = g0 - f(0)/ f'(0)
- */
-
 #import <Foundation/Foundation.h>
 #include <math.h>
 
@@ -917,8 +932,6 @@ NSArray* (^sortAlgo(NSString *)) (NSMutableArray *);
 Using a block as return-type
 ```objc
 typdef NSArray* (^algo_t)(NSMutableArray *);
-
-
 ```
 
 3. Concurrency
@@ -1182,4 +1195,3 @@ Draw2D.m Implementation file
 }
 @end
 ```
-
