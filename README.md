@@ -798,7 +798,114 @@ math_t mathOperation(MathFunc mathFunc) {
 }
 ```
 
-2.15 Use blocks to return a sort function. <br/>
+2.15 Pass a block into a function
+Example - 1
+```objc
+#import <Foundation/Foundation.h>
+#include <math.h>
+
+typedef int (^calc_t)(int);
+
+void mathFunc(int numArray[], int size, calc_t calc);
+
+int main(int argc, char * argv[]) {
+    @autoreleasepool {
+        
+        int nums[] = { 4, 9, 2, 7, 3};
+        int len = 5;
+        
+        mathFunc(nums, len, ^(int a) {return (int)pow(a, 2.0);});
+        
+        // display result array
+        for (int j = 0; j < len; j++) {
+            NSLog(@"%d", nums[j]);
+        }
+    }
+}
+
+void mathFunc(int numArray[], int size, calc_t calc) {
+    
+    for (int i = 0; i < size; i++) {
+        numArray[i] = calc(numArray[i]);
+    }
+}
+```
+2.16 Use Newton-Raphson method to find square root
+
+```objc
+/* Find square root using Newton-Raphson method
+ *  g1 = g0 - f(0)/ f'(0)
+ */
+
+#import <Foundation/Foundation.h>
+#include <math.h>
+
+double sqrt(double n);
+double absVal(double n);
+
+int main(int argc, const char* argv[]) {
+    double number = 10.0;
+    double root = sqrt(number);
+    NSLog(@"root: %.4f\n", root);
+}
+
+double sqrt(double n) {
+    
+    double g = n / 2.0;          // start with a guess of the sqrt
+    double error = 0.00001;
+    
+    while (absVal(n - g*g) > error)
+    {
+        g = (g + n/g) / 2.0;    // Newton-Raphson sqrt formula
+    }
+    return g;
+}
+
+double absVal(double n) {
+    double val = (n < 0) ? -1 * n : n;
+    return val;
+}
+```
+
+2.17 Newton-Raphson implementaton with blocks
+```objc
+/* Find square root using Newton-Raphson method
+ * g0 - initial guess of the square root
+ * g1 - Newton-Raphson improvement
+ * g1 = g0 - f(0)/ f'(0)
+ */
+
+#import <Foundation/Foundation.h>
+#include <math.h>
+
+typedef double(^sqrt_t)(double);
+double absVal(double n);
+
+int main(int argc, const char* argv[]) {
+    
+    double number = 12.0;
+    sqrt_t sqrt = ^(double n){
+        double g = n / 2.0;          // start with a guess of the sqrt
+        double error = 0.00001;
+        
+        while (absVal(n - g*g) > error) {
+            g = (g + n/g) / 2.0;    // Newton-Raphson sqrt formula
+        }
+        return g;
+    };
+    
+    double root = sqrt(number);
+    NSLog(@"root: %.4f\n", root);
+}
+
+double absVal(double n) {
+    double val = (n < 0) ? -1 * n : n;
+    return val;
+}
+```
+
+
+2.18 Use blocks to return a sort function. <br/>
 Return type - NSArray (^)(NSMutableArray) <br/>
 Block name - sortAlgo <br/>
 Block input param - NSString * <br/>
@@ -1040,7 +1147,7 @@ Draw2D.m Implementation file
 @end
 ```
 
-5.7 Draw a closed path with UIBezierPath
+5.7 Draw a closed path with UIBezierPath <br/>
 5.7.1 - Trapezoidal
 ```objc
 #import "Draw2D.h"
@@ -1075,3 +1182,4 @@ Draw2D.m Implementation file
 }
 @end
 ```
+

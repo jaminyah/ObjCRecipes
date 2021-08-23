@@ -47,7 +47,6 @@ NSMutableArray* moveZeros(NSMutableArray *array) {
         
         j = j - 1;
     }
-
     return array;
 }
 @end
