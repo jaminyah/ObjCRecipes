@@ -7,6 +7,10 @@
 4. https://www.techotopia.com/index.php/An_iOS_7_Graphics_Tutorial_using_Core_Graphics_and_Core_Image
 5. https://stackoverflow.com/questions/31693328/draw-multiple-lines-core-graphics
 6. https://atozmath.com/example/CONM/Bisection.aspx?he=e&q=nr&ex=2
+7. https://stackoverflow.com/questions/1843251/difference-between-foundation-framework-and-core-foundation-framework
+8. https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFDesignConcepts/Articles/ObjectReferences.html
+9. Convert CFStringRef to C string: https://gist.github.com/emarashliev/8826629
+
 
 ```bash
 1. Compiling and Running
@@ -28,11 +32,23 @@
 3. Concurrency
 3.1 NSThread
 3.2 Thread Pool
+3.3 Asynchronous Programming
 
 4. Memory Management
 4.1 Autorelease Pool
 
 5. Core Graphics
+
+6. Difference Between
+6.1 Atomic vs non-atomic
+6.2 Class vs Instance Methods
+6.3 ObjectForKey vs ValueForKey
+6.4 Key Value Coding vs Key Value Observing
+6.5 Frame vs Bounds
+6.6 Framework vs Library
+6.7 Dynamic vs Static Library
+6.8 Core Foundation vs Foundation
+
 
 ```
 
@@ -935,10 +951,59 @@ typdef NSArray* (^algo_t)(NSMutableArray *);
 ```
 
 3. Concurrency
+
+3.1 NSRunLoop
+```objc
+#import "ViewController.h"
+
+@interface ViewController ()
+- (void) runLoopFunc;
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view, typically from a nib.
+    
+    [self runLoopFunc];
+}
+
+- (void) runLoopFunc {
+    Boolean runFlag = YES;
+    NSDate *loopUntil = [NSDate dateWithTimeIntervalSinceNow:1];
+    int count = 0;
+    
+    while (runFlag && [[NSRunLoop currentRunLoop] runMode: NSDefaultRunLoopMode beforeDate:loopUntil]) {
+        loopUntil = [NSDate dateWithTimeIntervalSinceNow:1];
+        count += 1;
+        NSLog(@"looping ... %d", count);
+ 
+        if (count > 20) {
+            break;
+        }
+    }
+}
+@end
+```
 3.1 NSThread
 3.2 Thread Pool
 
 3.3 Grand Central Dispatch (GCD)
+
+
+3.4 Asynchronous Programming
+
+Asynchronous programming in iOS can be achieved using the following:
+
+* Notification Center
+* GCD
+* Operations
+* Closure Callbacks
+* Delegates
+* Timers
+
+
 
 4. Memory Management
 
@@ -949,8 +1014,17 @@ typdef NSArray* (^algo_t)(NSMutableArray *);
     [_name retain];
 }
 ```
-
+4 Memory Management
 4.1 Autoreleasepool Context
+
+4.2 Properties
+
+4.2.1 Copy storage semantics
+```objc
+@property (nonatomic, copy) drawing_t drawingBlock; 
+```
+Use copy so that the block is moved to the heap and doesn't disappear when the scope in which it was created terminates.
+
 
 The autoreleasepool is a mechanism that allows the system to efficiently manage the memory your application uses as it creates new objects. Ownership of data is temporarily transferred to the run loop, for data that can be disposed at the end of the run loop cycle or should be claimed before the end of the loop cycle.
 
@@ -1195,3 +1269,96 @@ Draw2D.m Implementation file
 }
 @end
 ```
+
+6. Difference Between
+
+
+6.1 Atomic vs non-atomic
+
+
+6.2 Class vs Instance Methods
+
+
+6.3 ObjectForKey vs ValueForKey
+
+
+6.4 Key Value Coding vs Key Value Observing
+
+
+6.5 Frame vs Bounds
+
+
+6.6 Framework vs Library
+
+
+6.7 Dynamic vs Static Library
+
+
+6.8 Core Foundation vs Foundation
+
+Core Foundation is a library that was derived from the Foundation library. Core Foundation APIs are written in C while Foundation framework APIs are written
+in Objective-C. Core Foundation opaque types can be referred to by reference. It was developed as an adapter between Carbon, which was based on C-APIs, and Cocoa, which was based on Objective-C APIs. Carbon was later depreciated. Foundation used the NS prefix while Core Foundation used the CF prefix.
+
+```objc
+// Opaque type header file example
+typedef const struct __CFArray *CFArrayRef
+typedef struct __CFArray *CFMutableArrayRef
+```
+
+6.8.1 Convert CFString to NSString - ARC
+```objc
+CFString * cfString = "Hello, World!";
+NSString nsString = (__bridge NSString *) cfString; 
+```
+
+6.8.2 Convert CFStringRef to C String
+```objc
+    CFStringRef helloCFStr = CFSTR("Hello, World!.");
+    CFIndex length = CFStringGetLength(helloCFStr);
+    CFIndex maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8);
+    char *cStr = (char *)malloc(maxSize);
+    
+    CFStringGetCString(helloCFStr, cStr, maxSize,kCFStringEncodingUTF8);
+    printf("CFStringRef to C string:  %s\n", cStr);
+```
+
+6.8.3 Convert NSString to CFStringRef
+```objc
+// Xcode 8.2.1
+- (void) viewDidLoad {
+    [super viewDidLoad];
+    
+    NSString *nsStr = @"Hello, World!";
+    
+    CFStringRef cfStr = (__bridge CFStringRef) nsStr;
+    
+    NSString *original = (__bridge NSString *) cfStr;
+
+    NSLog(@"Original: %@", original);
+}
+```
+
+Foundation is Objective-C / Swift and provides NSString, NSDictionary.
+
+6.9 CFStringRef vs NSString vs String
+
+CFString - is a private type in Core Foundation framework. It's public interface is CFStringRef
+NSString - Objective-c string class found in the Foundation framework
+String - Swift string class found in the Swift Standard Library
+
+CFString - An opaque type that "represents" and operates on Unicode character arrays.
+CFArray - An opaque type for indexed-based collection functionality
+
+6.10 NSString vs NSAttributedString
+
+
+6.11 UTF-8 vs UTF-16 vs UTF-32
+
+
+6.12 Closures vs Blocks
+
+6.13 IBInspectable vs IBDesignable
+
+6.14 setNeedsDisplay vs setNeedsLayout
+
+6.15 HTTP vs HTTP2
