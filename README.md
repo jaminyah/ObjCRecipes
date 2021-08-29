@@ -1,4 +1,4 @@
-# Objective - C Recipies
+# Objective - C Recipes
 
 ## References:
 1. Programming in Objective-C, 6th Edition
