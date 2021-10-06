@@ -948,11 +948,227 @@ NSArray* (^sortAlgo(NSString *)) (NSMutableArray *);
 Using a block as return-type
 ```objc
 typdef NSArray* (^algo_t)(NSMutableArray *);
+``` 
+
+
+3.  Animate a box from x: 70, y: 80 to x: 200, y: 300. Reset to start position.
+
+```swift
+//  ViewController.m
+//  AnimateSquare
+//  Purpose: Animates a blue box from (x: 70, y: 80) to (x: 200, y: 300)
+
+#import "ViewController.h"
+
+@interface ViewController ()
+
+@property (weak, nonatomic) IBOutlet UIView *blueBox;
+
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self.blueBox setCenter:CGPointMake(70.0, 80.0)];
+}
+
+- (IBAction) start:(id)sender {
+    
+    // block implicity retains 'self'
+    [UIView animateWithDuration:3.0 animations:^{
+        [ self.blueBox setCenter:CGPointMake(200.0, 300.0)];
+    }];
+}
+
+- (IBAction) reset:(id)sender {
+        [self.blueBox setCenter:CGPointMake(70.0, 80.0)];
+}
+
+@end
 ```
 
-3. Concurrency
+3.2 Animating Views with BlockObjects
+```bash
++ animateWithDuration:delay:animations:completion:
+```
 
-3.1 NSRunLoop
+Animate a box from x: 70, y: 80 to x 200, y: 300. On completion, stop at start position.
+```objc
+//  ViewController.m
+//  AnimateSquare
+
+#import "ViewController.h"
+
+@interface ViewController ()
+@property (weak, nonatomic) IBOutlet UIView *blueBox;
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view, typically from a nib.
+    [self.blueBox setCenter:CGPointMake(70.0, 80.0)];
+}
+
+- (IBAction)start:(id)sender {
+    
+    [UIView animateWithDuration:3.0
+                                   delay:0.0
+                                 options:(UIViewAnimationCurveEaseInOut | UIViewAnimationOptionAutoreverse)
+                              animations:^{
+                                  [self.blueBox setCenter:CGPointMake(200, 300)];
+                              }
+                              completion: ^(BOOL finished) {
+                                  [self.blueBox setCenter:CGPointMake(70, 80)];
+                              }];
+}
+
+@end
+```
+
+3.x Animate with BlockObject - TapGestureRecognizer
+```bash
++ animateWithDuration:animations:
+```
+
+```objc
+#import "ViewController.h"
+
+@interface ViewController ()
+@property (weak, nonatomic) IBOutlet UIView *blueBox;
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self.blueBox setCenter:CGPointMake(70, 70)];
+    
+    UITapGestureRecognizer*tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(startAnimation:)];
+    [self.blueBox addGestureRecognizer:tapGesture];
+}
+
+- (void) startAnimation: (UIGestureRecognizer *) gesture {
+    [UIView animateWithDuration:0.5 animations:^{
+        [self.blueBox setCenter:CGPointMake(70, 300)];
+    }];
+}
+@end
+```
+
+3.x Animate with BlockObject - TapGestureGRecognizer
+
+```bash
++ animateWithDuration:animations:completion:
+```
+
+```objc
+#import "ViewController.h"
+
+@interface ViewController ()
+@property (weak, nonatomic) IBOutlet UIView *blueBox;
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self.blueBox setCenter:CGPointMake(70, 70)];
+    
+    UITapGestureRecognizer*tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(startAnimation:)];
+    [self.blueBox addGestureRecognizer:tapGesture];
+}
+
+- (void) startAnimation: (UIGestureRecognizer *) gesture {
+    
+    [UIView animateWithDuration:3.0
+                          delay:0.0
+                        options:(UIViewAnimationCurveEaseInOut | UIViewAnimationOptionAutoreverse)
+                     animations:^{
+                         [self.blueBox setCenter:CGPointMake(70, 300)];
+                     }
+                     completion: ^(BOOL finished) {
+                         [self.blueBox setCenter:CGPointMake(70, 70)];
+                     }];
+}
+@end
+```
+
+
+3.3 Animate with Keyframe Animation
+```bash
++ animateKeyframesWithDuration:delay:options:animations:completion:
+```
+```objc
+// Blue box oscillates between its start and end positions.
+
+#import "ViewController.h"
+
+@interface ViewController ()
+@property (weak, nonatomic) IBOutlet UIView *blueBox;
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view, typically from a nib.
+    [self.blueBox setCenter:CGPointMake(70.0, 80.0)];
+}
+
+
+- (IBAction)start:(id)sender {
+    
+    [UIView animateKeyframesWithDuration:3.0
+                                   delay:0.0
+                                 options: UIViewKeyframeAnimationOptionRepeat | UIViewKeyframeAnimationOptionAutoreverse
+                              animations:^{
+                                  [self.blueBox setCenter:CGPointMake(200, 300)];
+                              }
+                              completion: nil
+                            ];
+}
+@end
+```
+
+3.x Animate with UIViewPropertyAnimator
+
+```objc
+#import "ViewController.h"
+
+@interface ViewController ()
+@property (weak, nonatomic) IBOutlet UIView *blueBox;
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self.blueBox setCenter:CGPointMake(70, 70)];
+    
+    UITapGestureRecognizer*tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(startAnimation:)];
+    [self.blueBox addGestureRecognizer:tapGesture];
+}
+
+- (void) startAnimation: (UIGestureRecognizer *) gesture {
+    
+    UIViewPropertyAnimator *animator = [[UIViewPropertyAnimator alloc] initWithDuration:2.0 curve:UIViewAnimationCurveLinear animations:^{
+        [self.blueBox setCenter:CGPointMake(70, 300)];
+    }];
+    [animator startAnimation];
+    [animator addCompletion: ^(UIViewAnimatingPosition finalPosition) {
+        [self.blueBox setCenter:CGPointMake(70, 70)];
+    }];
+}
+@end
+```
+
+
+4. Concurrency
+
+4.1 NSRunLoop
 ```objc
 #import "ViewController.h"
 
@@ -986,6 +1202,9 @@ typdef NSArray* (^algo_t)(NSMutableArray *);
 }
 @end
 ```
+
+
+
 3.1 NSThread
 3.2 Thread Pool
 
