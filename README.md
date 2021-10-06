@@ -10,7 +10,7 @@
 7. https://stackoverflow.com/questions/1843251/difference-between-foundation-framework-and-core-foundation-framework
 8. https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFDesignConcepts/Articles/ObjectReferences.html
 9. Convert CFStringRef to C string: https://gist.github.com/emarashliev/8826629
-
+10. https://stackoverflow.com/questions/22839071/weakself-in-blocks
 
 ```bash
 1. Compiling and Running
@@ -1164,6 +1164,66 @@ Animate a box from x: 70, y: 80 to x 200, y: 300. On completion, stop at start p
 }
 @end
 ```
+3.x Animate with UIViewPropertyAnimator - IBAction
+
+```objc
+#import "ViewController.h"
+
+@interface ViewController ()
+@property (nonatomic) UIView *rectView;
+@property (nonatomic) UIViewPropertyAnimator *animator;
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.rectView = [[UIView alloc] initWithFrame:CGRectMake(50, 50, 50, 50)];
+    self.rectView.backgroundColor = [UIColor redColor];
+    [self.view addSubview:_rectView];
+}
+
+- (void)runAnimation {
+    // avoid a retain cycle in closure
+    typeof(self)__weak weakSelf = self;
+    
+    // it is safe to allow the animation block to capture self. 
+    self.animator = [[UIViewPropertyAnimator alloc] initWithDuration:4 curve:UIViewAnimationCurveLinear animations:^{
+        self.rectView.frame = CGRectMake(150, 150, 150, 150);
+    }];
+    
+    // capturing self strongly inside the block can create a retain cycle
+    [self.animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
+        if (finalPosition == UIViewAnimatingPositionEnd) {
+            weakSelf.rectView.frame = CGRectMake(50, 50, 50, 50);
+        }
+    }];
+    
+    [self.animator startAnimation];
+}
+
+- (IBAction)start:(id)sender {
+    [self runAnimation];
+}
+
+- (IBAction)pause:(id)sender {
+    [self.animator pauseAnimation];
+}
+
+- (IBAction)resume:(id)sender {
+    UISpringTimingParameters *params = [[UISpringTimingParameters alloc] initWithDampingRatio:0.3];
+    [self.animator continueAnimationWithTimingParameters:params durationFactor:1];
+}
+
+- (IBAction)stop:(id)sender {
+    [self.animator stopAnimation:YES];
+}
+
+@end
+```
+
+x.x Memory Management
+
 
 
 4. Concurrency
@@ -1233,8 +1293,47 @@ Asynchronous programming in iOS can be achieved using the following:
     [_name retain];
 }
 ```
-4 Memory Management
-4.1 Autoreleasepool Context
+
+4.1 Memory Management - Closure Blocks
+
+Capturing `self` inside a closure block can create a strong reference cycle (aka retain cycle). Avoid a retain cycle in a closure by creating a weak reference to `self` as in 
+```bash
+typeof(self) __weak weakSelf = self;
+```
+In the case of `animateWithDuration`, the animation stops when the uiview is dismissed and the strong reference is terminated, so there is no strong reference cycle.
+
+> It is safe to allow animation blocks to capture self.
+
+```objc
+- (void)runAnimation {
+    // avoid a retain cycle in closure
+    typeof(self)__weak weakSelf = self;
+    
+    // it is safe to allow the animation block to capture self. 
+    self.animator = [[UIViewPropertyAnimator alloc] initWithDuration:4 curve:UIViewAnimationCurveLinear animations:^{
+        self.rectView.frame = CGRectMake(150, 150, 150, 150);
+    }];
+    
+    // capturing self strongly inside the block can create a retain cycle
+    [self.animator addCompletion:^(UIViewAnimatingPosition finalPosition) {
+        if (finalPosition == UIViewAnimatingPositionEnd) {
+            weakSelf.rectView.frame = CGRectMake(50, 50, 50, 50);
+        }
+    }];
+    
+    [self.animator startAnimation];
+}
+```
+
+4.2 Autoreleasepool Context
+
+
+
+
+
+
+
+
 
 4.2 Properties
 
@@ -1246,6 +1345,11 @@ Use copy so that the block is moved to the heap and doesn't disappear when the s
 
 
 The autoreleasepool is a mechanism that allows the system to efficiently manage the memory your application uses as it creates new objects. Ownership of data is temporarily transferred to the run loop, for data that can be disposed at the end of the run loop cycle or should be claimed before the end of the loop cycle.
+
+
+
+
+
 
 5. Core Graphics
  
@@ -1581,3 +1685,4 @@ CFArray - An opaque type for indexed-based collection functionality
 6.14 setNeedsDisplay vs setNeedsLayout
 
 6.15 HTTP vs HTTP2
+
