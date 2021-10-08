@@ -11,6 +11,7 @@
 8. https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFDesignConcepts/Articles/ObjectReferences.html
 9. Convert CFStringRef to C string: https://gist.github.com/emarashliev/8826629
 10. https://stackoverflow.com/questions/22839071/weakself-in-blocks
+11. https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/CoreAnimation_guide/CoreAnimationBasics/CoreAnimationBasics.html#//apple_ref/doc/uid/TP40004514-CH2-SW12
 
 ```bash
 1. Compiling and Running
@@ -419,6 +420,8 @@ NSUInteger returns a 64-bit integer value which becomes truncated on a 32-bit sy
 
 2. Blocks
 
+A block is a code segment that behaves like a function. A code block can be passes as a parameter to a function and be returned from a function. Blocks can refer to local variables that are within its scope.
+
 2.1 General syntax
 
 ```bash
@@ -457,7 +460,224 @@ int main(int argc, char * argv[]) {
 }
 ```
 
-2.4 Define and use a function block.
+2.4 Declare a block with return type `int` and input type `int`
+
+```objc
+#import "ViewController.h"
+
+@interface ViewController ()
+
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self runBlockCode];
+}
+
+- (void)runBlockCode {
+    
+    int (^computeBlock)(int);
+    
+    computeBlock = ^int (int myVar) {
+        return myVar + 12;
+    };
+    
+    int result = computeBlock(4);
+    NSLog(@"\nResult: %d", result);
+}
+@end
+```
+
+Output:
+```bash
+Result: 16
+```
+
+2.5 Inferring the Block Literal Return Type
+```objc
+#import "ViewController.h"
+
+@interface ViewController ()
+
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self runBlockCode];
+}
+
+- (void)runBlockCode {
+    
+    int (^computeBlock)(int);
+    
+    // compiler infers the return type
+    computeBlock = ^(int myVar) {
+        return myVar + 12;
+    };
+    
+    NSLog(@"\nResult: %d", computeBlock(4));
+}
+@end
+```
+
+Output:
+```bash
+Result: 16
+```
+
+2.6 Inline Block Code
+```objc
+#import "ViewController.h"
+
+@interface ViewController ()
+
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self runBlockCode];
+}
+
+- (void)runBlockCode {
+    
+    int (^computeBlock)(int);
+    
+    computeBlock = ^int (int myVar) {
+        return myVar + 12;
+    };
+    
+    NSLog(@"\nResult: %d", ^(int myVar){return myVar + 12;}(4));
+}
+@end
+```
+
+Output:
+```bash
+Result: 16
+```
+
+2.7 Blocks and Local Variables
+```objc
+#import "ViewController.h"
+
+@interface ViewController ()
+
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    [self runBlockCode];
+}
+
+- (void)runBlockCode {
+    
+    int (^computeBlock)(void);
+    
+    int myVar = 4;
+    computeBlock = ^{
+        return myVar + 12;
+    };
+    
+    NSLog(@"\nResult: %d", computeBlock());
+}
+@end
+```
+
+Output:
+```bash
+Result: 16
+```
+
+2.8 Block Local Capture at Point of Assignment
+
+```objc
+#import "ViewController.h"
+
+@interface ViewController ()
+
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    [self runBlockCode];
+}
+
+- (void)runBlockCode {
+    
+    int (^computeBlock)(void);
+    
+    int myVar = 4;
+    
+    // block assignment captures value of myVar here
+    computeBlock = ^{
+        return myVar + 12;
+    };
+    
+    myVar = 5;
+    NSLog(@"\nResult: %d", computeBlock());
+}
+@end
+```
+
+Output:
+```bash
+Result: 16
+```
+
+2.9 Block Local Capture at Point of Useage
+
+Using the `__block` variable modifier allows the block to capture the local variable value at the point where the block is used.
+
+```objc
+#import "ViewController.h"
+
+@interface ViewController ()
+
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+
+    [self runBlockCode];
+}
+
+- (void)runBlockCode {
+    
+    int (^computeBlock)(void);
+    
+    __block int myVar = 4;
+    
+    // block assignment captures value of myVar here
+    computeBlock = ^{
+        return myVar + 12;
+    };
+    
+    myVar = 5;
+    NSLog(@"\nResult: %d", computeBlock());
+}
+@end
+```
+
+Output:
+```bash
+Result: 17
+```
+
+2.10 Define and use a function block.
 ```objc
 #import <Foundation/Foundation.h>
 
@@ -479,7 +699,7 @@ int main(int argc, char * argv[]) {
 }
 ```
 
-2.5 Calling a function that take a block as parameter.
+2.11 Calling a function that take a block as parameter.
 ```objc
 #import <UIKit/UIKit.h>
 
@@ -499,7 +719,7 @@ void blockFunc(void (^g)(void)) {
 }
 ```
 
-2.6 Calling with a block literal as parameter
+2.12 Calling with a block literal as parameter
 ```objc
 #import <Foundation/Foundation.h>
 
@@ -520,7 +740,7 @@ void blockFunc(void (^f)(void)) {
 }
 ```
 
-2.7 Error - none execution of the block parameter
+2.13 Error - none execution of the block parameter
 ```objc
 #import <Foundation/Foundation.h>
 
@@ -542,7 +762,7 @@ void blockFunc(void (^f)(void)) {
 
 ```
 
-2.8 Using a block typedef with a block literal.
+2.14 Using a block typedef with a block literal.
 ```objc
 #import <Foundation/Foundation.h>
 
@@ -564,7 +784,7 @@ void blockFunc(void (^f)(void)) {
 }
 ```
 
-2.9 Using a block typedef with a block definition.
+2.15 Using a block typedef with a block definition.
 ```objc
 #import <Foundation/Foundation.h>
 
@@ -588,7 +808,7 @@ void blockFunc(void (^f)(void)) {
 }
 ```
 
-2.10 Using a block typedef with a helloWorld literal
+2.16 Using a block typedef with a helloWorld literal
 ```objc
 #import <Foundation/Foundation.h>
 
@@ -612,7 +832,7 @@ void blockFunc(void (^f)(void)) {
 }
 ``` 
 
-2.11 Declaring a block type <br/>
+2.17 Declaring a block type <br/>
 
 Type name - sum_t <br/>
 In params - (int, int) <br/>
@@ -622,12 +842,12 @@ Return type - int <br/>
 typedef int (^sum_t)(int, int);
 ```
 
-2.12 Declaring a block-type variable
+2.18 Declaring a block-type variable
 ```objc
 int (^sum_t)(int, int) sum;
 ```
 
-2.13 Using a block-type variable
+2.19 Using a block-type variable
 ```objc
 int (^sum)(int, int);
 sum = ^(int x, int y) { return (x + y); };
@@ -635,7 +855,7 @@ sum = ^(int x, int y) { return (x + y); };
 NSLog(@"Sum: %d", sum(7, 11));
 ```
 
-2.10 Passing in a block pointer with parameters
+2.20 Passing in a block pointer with parameters
 ```objc
 #import <Foundation/Foundation.h>
 
@@ -666,7 +886,7 @@ int blockFunc(add_t add) {
 }
 ```
 
-2.11 Passing in a block literal as parameter
+2.21 Passing in a block literal as parameter
 ```objc
 #import <Foundation/Foundation.h>
 
@@ -693,14 +913,13 @@ int blockFunc(add_t add) {
     return output;
 }
 ```
-2.12 Returning a block syntax
+2.22 Returning a block syntax
 ```objc
-return-type (^block-name)(block-in-params)) (return-block-in-params);
+return-type (^block-name)(block-input-params)) (return-block-in-params);
 ```
 
-2.13 Return basic math functions using blocks
+2.23 Return basic math functions using blocks
 ```objc
-
 #import <Foundation/Foundation.h>
 
 typedef int (^math_t)(int, int);
@@ -751,7 +970,7 @@ math_t mathOperation(NSString *mathFunc) {
 }
 ```
 
-2.14 Refractoring the previous code to use enums
+2.24 Refractoring the previous code to use enums
 ```objc
 #import <Foundation/Foundation.h>
 
@@ -815,7 +1034,7 @@ math_t mathOperation(MathFunc mathFunc) {
 }
 ```
 
-2.15 Pass a block into a function
+2.25 Pass a block into a function
 ```objc
 #import <Foundation/Foundation.h>
 #include <math.h>
@@ -846,7 +1065,7 @@ void mathFunc(int numArray[], int size, calc_t calc) {
     }
 }
 ```
-2.16 Use Newton-Raphson method to find square root
+2.26 Use Newton-Raphson method to find square root
 
 ```objc
 /* Find square root using Newton-Raphson method
@@ -904,7 +1123,7 @@ double absVal(double n) {
 }
 ```
 
-2.17 Newton-Raphson implementaton with blocks
+2.27 Newton-Raphson implementaton with blocks
 ```objc
 #import <Foundation/Foundation.h>
 #include <math.h>
@@ -936,7 +1155,7 @@ double absVal(double n) {
 ```
 
 
-2.18 Use blocks to return a sort function. <br/>
+2.28 Use blocks to return a sort function. <br/>
 Return type - NSArray (^)(NSMutableArray) <br/>
 Block name - sortAlgo <br/>
 Block input param - NSString * <br/>
@@ -951,9 +1170,46 @@ typdef NSArray* (^algo_t)(NSMutableArray *);
 ``` 
 
 
-3.  Animate a box from x: 70, y: 80 to x: 200, y: 300. Reset to start position.
 
-```swift
+3. Core Animation
+
+The Core Animation framework sits just below the UIKit framework in the iOS framework hierarchy. It allows developers to animate UIView objects. All animations are applied to objects of class CALayer.
+
+<p align="center">
+  <img src="img/frameworklayers.svg" /> 
+</p>
+
+Class CAAnimation is the abstract superclass of the Core Animation framework. CAAnimation conforms to protocols CAAction, CAMediaTiming, NSCopying, NSSecureCoding, SCNAnimationProtocol. Since CAAnimation is an abstract class, animation objects cannot be created directly from it. Animation objects are created from classes CABasicAnimation, CAKeyframeAnimation, CAAnimationGroup and CATransition. These are all concrete subclasses of class CAAnimation.
+
+The image below shows the Core Animation class inheritance hierarchy. 
+<p align="center">
+  <img src="img/caanimationclass.svg" /> 
+</p>
+
+
+3.1 Compare Layers and Views
+
+Layer objects (layers) are 2D surfaces that act as models for UIView objects (views). As such, layers maintain data about the visual attributes associated with views. A layer does this by caching view data in a bitmap. Rendering of layer state information is performed by the graphics hardware.
+
+Changes using view-based drawing makes a call to method `drawRect:` which is performed on the main thread by the CPU. 
+
+Layers differ from view in the following respects:
+* Layers do not respond to events
+* Layers do not participate in the UIResponder chain
+* Layers do not draw their content
+* Layers have anchor points around manipulations can occur.
+
+> "Views are a thin wrapper around layer objects."
+
+3.2 Frame and Bounds
+
+
+
+3.3  Animate a UIView Object
+
+The example below uses a start button to animate a UIView from position x: 70, y: 80 to x: 200, y: 300. Button reset  set the view object back to the start position.
+
+```objc
 //  ViewController.m
 //  AnimateSquare
 //  Purpose: Animates a blue box from (x: 70, y: 80) to (x: 200, y: 300)
@@ -984,11 +1240,10 @@ typdef NSArray* (^algo_t)(NSMutableArray *);
 - (IBAction) reset:(id)sender {
         [self.blueBox setCenter:CGPointMake(70.0, 80.0)];
 }
-
 @end
 ```
 
-3.2 Animating Views with BlockObjects
+3.3 Animating UIViews with BlockObjects
 ```bash
 + animateWithDuration:delay:animations:completion:
 ```
@@ -1028,7 +1283,7 @@ Animate a box from x: 70, y: 80 to x 200, y: 300. On completion, stop at start p
 @end
 ```
 
-3.x Animate with BlockObject - TapGestureRecognizer
+3.4 Animate with BlockObject - TapGestureRecognizer
 ```bash
 + animateWithDuration:animations:
 ```
@@ -1058,7 +1313,7 @@ Animate a box from x: 70, y: 80 to x 200, y: 300. On completion, stop at start p
 @end
 ```
 
-3.x Animate with BlockObject - TapGestureGRecognizer
+3.5 Animate with BlockObject - TapGestureGRecognizer
 
 ```bash
 + animateWithDuration:animations:completion:
@@ -1097,7 +1352,7 @@ Animate a box from x: 70, y: 80 to x 200, y: 300. On completion, stop at start p
 ```
 
 
-3.3 Animate with Keyframe Animation
+3.6 Animate with Keyframe Animation
 ```bash
 + animateKeyframesWithDuration:delay:options:animations:completion:
 ```
@@ -1133,7 +1388,7 @@ Animate a box from x: 70, y: 80 to x 200, y: 300. On completion, stop at start p
 @end
 ```
 
-3.x Animate with UIViewPropertyAnimator
+3.7 Animate with UIViewPropertyAnimator
 
 ```objc
 #import "ViewController.h"
@@ -1164,7 +1419,8 @@ Animate a box from x: 70, y: 80 to x 200, y: 300. On completion, stop at start p
 }
 @end
 ```
-3.x Animate with UIViewPropertyAnimator - IBAction
+
+3.8 Animate with UIViewPropertyAnimator - IBAction
 
 ```objc
 #import "ViewController.h"
@@ -1222,7 +1478,137 @@ Animate a box from x: 70, y: 80 to x 200, y: 300. On completion, stop at start p
 @end
 ```
 
-x.x Memory Management
+3.9 CAAnimation - Linear Motion from ViewDidLoad
+
+In this example, a blue view is moves linearly along the y-axis, while a green view moves along the x-axis. Animation starts immediately.
+
+<p align="center">
+  <img src="img/linear-start.png" /> 
+  <img src="img/linear-end.png" />
+</p>
+
+```objc
+//  Animate from a start position to an end position
+#import "ViewController.h"
+
+@interface ViewController ()
+@property (strong, nonatomic) UIView *blueView;
+@property (strong, nonatomic) UIView *greenView;
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+ 
+    self.blueView = [[UIView alloc] initWithFrame:CGRectMake(20, 40, 80, 80)];
+    self.greenView = [[UIView alloc] initWithFrame:CGRectMake(110, 40, 80, 80)];
+    
+    [self.blueView setBackgroundColor:[UIColor blueColor]];
+    [self.greenView setBackgroundColor:[UIColor greenColor]];
+    [self.view addSubview:self.blueView];
+    [self.view addSubview:self.greenView];
+    
+    CGFloat startY = self.blueView.layer.position.y;
+    self.blueView.layer.position = CGPointMake(self.blueView.layer.position.x, 400);
+    CABasicAnimation *blueMotion = [CABasicAnimation animationWithKeyPath:@"position.y"];
+    blueMotion.fromValue = @(startY);
+    blueMotion.duration = 2.0;
+    
+    CGFloat startX = self.greenView.layer.position.x;
+    self.greenView.layer.position = CGPointMake(240, self.greenView.layer.position.y);
+    CABasicAnimation *greenMotion = [CABasicAnimation animationWithKeyPath:@"position.x"];
+    greenMotion.fromValue = @(startX);
+    greenMotion.duration = 2.0;
+
+    [self.blueView.layer addAnimation:blueMotion forKey:@"position"];
+    [self.greenView.layer addAnimation:greenMotion forKey:@"position"];
+}
+@end
+```
+
+3.10 CAAnimation - Linear Motion from Button Action
+
+In this example, a blue view is moves linearly along the y-axis, while a green view moves along the x-axis. Animation starts with button action. The button is added programmatically and so uses autolayout to position it in the view.
+
+```objc
+#import "ViewController.h"
+
+@interface ViewController ()
+@property (nonatomic, strong) UIView *blueView;
+@property (nonatomic, strong) UIView *greenView;
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+ 
+    self.blueView = [[UIView alloc] initWithFrame:CGRectMake(20, 40, 80, 80)];
+    self.greenView = [[UIView alloc] initWithFrame:CGRectMake(110, 40, 80, 80)];
+    
+    [self.blueView setBackgroundColor:[UIColor blueColor]];
+    [self.greenView setBackgroundColor:[UIColor greenColor]];
+    
+    [self.view addSubview:self.blueView];
+    [self.view addSubview:self.greenView];
+    [self addButton];
+
+}
+
+- (void) addButton {
+    
+    // creat button and add to the superview
+    UIButton *button = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    button.translatesAutoresizingMaskIntoConstraints = NO;
+    [button setTitle:@"Animate" forState:UIControlStateNormal];
+    [self.view addSubview:button];
+    
+    // add constraints
+    NSLayoutConstraint *buttonXConstraints = [NSLayoutConstraint constraintWithItem:button
+                                                                          attribute:NSLayoutAttributeCenterX
+                                                                          relatedBy:NSLayoutRelationGreaterThanOrEqual
+                                                                             toItem:self.view
+                                                                          attribute:NSLayoutAttributeCenterX
+                                                                         multiplier:1.0
+                                                                           constant:0.0f];
+    NSLayoutConstraint *buttonYConstraints = [NSLayoutConstraint constraintWithItem:button
+                                                                          attribute:NSLayoutAttributeCenterY
+                                                                          relatedBy:NSLayoutRelationEqual
+                                                                             toItem:self.view
+                                                                          attribute:NSLayoutAttributeCenterY
+                                                                         multiplier:1.0
+                                                                           constant:0.0f];
+    [self.view addConstraints:@[buttonXConstraints, buttonYConstraints]];
+    [button addTarget:self action:@selector(animateAction:) forControlEvents:UIControlEventTouchUpInside];
+}
+
+- (void) animateAction: (UIButton *) sender {
+    
+    // Animate blue view
+    CGFloat startY = self.blueView.layer.position.y;
+    self.blueView.layer.position = CGPointMake(self.blueView.layer.position.x, 400);
+    CABasicAnimation *blueMotion = [CABasicAnimation animationWithKeyPath:@"position.y"];
+    blueMotion.fromValue = @(startY);
+    blueMotion.duration = 2.0;
+    
+    // Animate green view
+    CGFloat startX = self.greenView.layer.position.x;
+    self.greenView.layer.position = CGPointMake(240, self.greenView.layer.position.y);
+    CABasicAnimation *greenMotion = [CABasicAnimation animationWithKeyPath:@"position.x"];
+    greenMotion.fromValue = @(startX);
+    greenMotion.duration = 2.0;
+    
+    [self.blueView.layer addAnimation:blueMotion forKey:@"position"];
+    [self.greenView.layer addAnimation:greenMotion forKey:@"position"];
+}
+
+@end
+```
+
+
+
+
 
 
 
@@ -1298,7 +1684,7 @@ Asynchronous programming in iOS can be achieved using the following:
 
 Capturing `self` inside a closure block can create a strong reference cycle (aka retain cycle). Avoid a retain cycle in a closure by creating a weak reference to `self` as in 
 ```bash
-typeof(self) __weak weakSelf = self;
+__typeof(self) __weak weakSelf = self;
 ```
 In the case of `animateWithDuration`, the animation stops when the uiview is dismissed and the strong reference is terminated, so there is no strong reference cycle.
 
@@ -1306,8 +1692,8 @@ In the case of `animateWithDuration`, the animation stops when the uiview is dis
 
 ```objc
 - (void)runAnimation {
-    // avoid a retain cycle in closure
-    typeof(self)__weak weakSelf = self;
+    // avoid a retain cycle in closure, create a weak reference to `self`
+    __typeof(self)__weak weakSelf = self;
     
     // it is safe to allow the animation block to capture self. 
     self.animator = [[UIViewPropertyAnimator alloc] initWithDuration:4 curve:UIViewAnimationCurveLinear animations:^{
@@ -1335,7 +1721,7 @@ In the case of `animateWithDuration`, the animation stops when the uiview is dis
 
 
 
-4.2 Properties
+4.3 Properties
 
 4.2.1 Copy storage semantics
 ```objc
@@ -1347,7 +1733,7 @@ Use copy so that the block is moved to the heap and doesn't disappear when the s
 The autoreleasepool is a mechanism that allows the system to efficiently manage the memory your application uses as it creates new objects. Ownership of data is temporarily transferred to the run loop, for data that can be disposed at the end of the run loop cycle or should be claimed before the end of the loop cycle.
 
 
-
+4.4 Memory Profiler - Instruments
 
 
 
