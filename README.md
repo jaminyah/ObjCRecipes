@@ -1169,9 +1169,136 @@ Using a block as return-type
 typdef NSArray* (^algo_t)(NSMutableArray *);
 ``` 
 
+3. View Programming Guide
+
+3.x View Hierarchy
+
+<p align="center">
+  <img src="img/uikit/view-hierarchy.svg" alt="view-hierarchy" /> 
+</p>
 
 
-3. Core Animation
+3.x UIKit App Objects
+
+<p align="center">
+  <img src="img/uikit/uikit-core-objects.svg" alt="uikit-core-objects" /> 
+</p>
+
+3.x Add SubView to ViewController View Property
+
+```bash
+# view controller view property
+@property(null_resettable, nonatomic,strong) UIView *view;
+```
+
+Views are positioned with respect to their parent view coordinate system. In the code below, blueView is positioned x:20, y:20 in parent, self.view.
+
+<p align="center">
+  <img src="img/subview/blue-view.png" alt="blue-view" /> 
+</p>
+
+
+> Note: Change the view's background color to other than white for the view to be visible.
+
+```swift
+#import "ViewController.h"
+
+@interface ViewController ()
+@property (nonatomic, strong) UIView *blueView;
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    self.blueView = [[UIView alloc] initWithFrame:CGRectMake(20, 20, 100, 100)];
+
+    // set backgroundColor is required to see view
+    self.blueView.backgroundColor = [UIColor blueColor];
+
+    // blue view position is with repect to parent, view, coordinate system
+    [self.view addSubview:self.blueView];
+}
+@end
+```
+
+3.x Add Second SubView to ViewController View Property
+
+In the code below, greenView is positioned relative to the frame of the viewcontroller's view  (view). 
+Since both blueView and greenView have the same coordinates, (x:20, y:20) they are both drawn from the same point.
+
+<p align="center">
+  <img src="img/subview/blue-green-view.png" alt="blue-green-view/> 
+</p>
+
+```swift
+#import "ViewController.h"
+
+@interface ViewController ()
+@property (nonatomic, strong) UIView *blueView;
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    self.blueView = [[UIView alloc] initWithFrame:CGRectMake(20, 20, 100, 100)];
+    self.blueView.backgroundColor = [UIColor blueColor];
+    [self.view addSubview:self.blueView];
+    
+
+    CGRect greenRect = CGRectMake(20, 20, 60, 60);
+    UIView *greenView = [[UIView alloc] initWithFrame:greenRect];
+    greenView.backgroundColor = [UIColor greenColor];
+
+    // add second subview
+    [self.view addSubview:greenView];
+    
+}
+@end
+```
+
+3.x Add SubView to View's SubView
+
+On adding greenView to blueView, greenView is positioned relative to its parent, blueView, coordinate system.
+
+<p align="center">
+  <img src="img/subview/green-in-blue.png" alt="green-in-blue"/> 
+</p>
+
+```swift
+#import "ViewController.h"
+
+@interface ViewController ()
+@property (nonatomic, strong) UIView *blueView;
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    self.blueView = [[UIView alloc] initWithFrame:CGRectMake(20, 20, 100, 100)];
+    self.blueView.backgroundColor = [UIColor blueColor];
+    [self.view addSubview:self.blueView];
+    
+
+    CGRect greenRect = CGRectMake(20, 20, 60, 60);
+    UIView *greenView = [[UIView alloc] initWithFrame:greenRect];
+    greenView.backgroundColor = [UIColor greenColor];
+    [self.blueView addSubview:greenView];
+    
+}
+@end
+```
+
+
+
+
+
+4. Core Animation
 
 The Core Animation framework sits just below the UIKit framework in the iOS framework hierarchy. It allows developers to animate UIView objects. All animations are applied to objects of class CALayer.
 
