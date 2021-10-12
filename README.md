@@ -1699,8 +1699,8 @@ Animate a box from x: 70, y: 80 to x 200, y: 300. On completion, stop at start p
 In this example, a blue view is moves linearly along the y-axis, while a green view moves along the x-axis. Animation starts immediately.
 
 <p align="center">
-  <img src="img/linear-start.png" /> 
-  <img src="img/linear-end.png" />
+  <img src="img/animation/linear-start.png" /> 
+  <img src="img/animation/linear-end.png" />
 </p>
 
 ```objc
