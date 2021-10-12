@@ -1200,7 +1200,7 @@ Views are positioned with respect to their parent view coordinate system. In the
 
 > Note: Change the view's background color to other than white for the view to be visible.
 
-```swift
+```objc
 #import "ViewController.h"
 
 @interface ViewController ()
@@ -1232,7 +1232,7 @@ Since both blueView and greenView have the same coordinates, (x:20, y:20) they a
   <img src="img/subview/blue-green-view.png" alt="blue-green-view/> 
 </p>
 
-```swift
+```objc
 #import "ViewController.h"
 
 @interface ViewController ()
@@ -1248,14 +1248,12 @@ Since both blueView and greenView have the same coordinates, (x:20, y:20) they a
     self.blueView.backgroundColor = [UIColor blueColor];
     [self.view addSubview:self.blueView];
     
-
     CGRect greenRect = CGRectMake(20, 20, 60, 60);
     UIView *greenView = [[UIView alloc] initWithFrame:greenRect];
     greenView.backgroundColor = [UIColor greenColor];
 
     // add second subview
     [self.view addSubview:greenView];
-    
 }
 @end
 ```
@@ -1268,7 +1266,7 @@ On adding greenView to blueView, greenView is positioned relative to its parent,
   <img src="img/subview/green-in-blue.png" alt="green-in-blue"/> 
 </p>
 
-```swift
+```objc
 #import "ViewController.h"
 
 @interface ViewController ()
@@ -1289,7 +1287,6 @@ On adding greenView to blueView, greenView is positioned relative to its parent,
     UIView *greenView = [[UIView alloc] initWithFrame:greenRect];
     greenView.backgroundColor = [UIColor greenColor];
     [self.blueView addSubview:greenView];
-    
 }
 @end
 ```
@@ -1959,7 +1956,7 @@ Draw2D.m Implementation file
 @end
 ```
 
-5.3 Draw a vertical line using UIBezierPath
+5.3 Draw a Vertical Line using UIBezierPath
 ```objc
 #import "Draw2D.h"
 
