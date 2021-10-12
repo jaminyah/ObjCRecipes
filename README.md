@@ -1173,14 +1173,107 @@ typdef NSArray* (^algo_t)(NSMutableArray *);
 
 3.x View Hierarchy
 
+
 <p align="center">
-  <img src="img/uikit/view-hierarchy.svg" alt="view-hierarchy" /> 
+  <img src="img/uikit-hierarchy.svg" alt="uikit-hierarchy" /> 
 </p>
 
+3.x UIScreen
+
+UIScreen is associated with the physical properties of the hardware device. The Apple reference document mentions that, "iOS devices may have a main screen and zero or more attached screens."
+
+UIScreen properties: 
+* Screen dimension expressed as screen bounds.
+* Screen orientation - portrait or landscape mode.
+* Screen brightness
+
+The bounds rectangle associated with the main screen can be obtain is code a listed below.
+
+```objc
+CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
+CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
+```
+
+3.x UIScreen Dimension in Landscape and Portrait Mode
+
+```objc
+- (void)deviceDidRotate:(NSNotification *)notification
+{
+    UIDeviceOrientation currentOrientation = [[UIDevice currentDevice] orientation];
+    
+    if (!UIDeviceOrientationIsValidInterfaceOrientation(currentOrientation)) {
+        return;
+    }
+    
+    BOOL isLandscape = UIDeviceOrientationIsLandscape(currentOrientation);
+    BOOL isPortrait = UIDeviceOrientationIsPortrait(currentOrientation);
+    
+    CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
+    CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
+    
+    if (isLandscape) {
+        NSLog(@"isLandscape");
+        NSLog(@"screen width: %.1f", screenWidth);
+        NSLog(@"screen height: %.1f", screenHeight);
+        NSLog(@"view width: %.1f", self.view.bounds.size.width);
+        NSLog(@"view height: %.1f", self.view.bounds.size.height);
+    } else if (isPortrait) {
+        NSLog(@"isPortrait");
+        NSLog(@"screen width: %.1f", screenWidth);
+        NSLog(@"screen height: %.1f", screenHeight);
+        NSLog(@"view width: %.1f", self.view.bounds.size.width);
+        NSLog(@"view height: %.1f", self.view.bounds.size.height);
+    }
+}
+```
+
+Output - Landscape Mode
+
+```bash
+isLandscape
+screen width: 568.0
+screen height: 320.0
+view width: 568.0
+view height: 320.0
+```
+
+Output - Portrait Mode
+
+```bash
+isPortrait
+screen width: 320.0
+screen height: 568.0
+view width: 320.0
+view height: 568.0
+```
+
+<p align="center">
+  <img src="img/screen-vs-window.svg" alt="screen-vs-window" /> 
+</p>
+
+3.x UIWindow
+
+Each iOS application has a least one main window that is set to the size of the screen bounds. It is a blank container for views and is generally created by the Application delegate during startup.
+
+```objc
+self.window = [[UIWindow alloc] initWithFrame: [[UIScreen mainScreen] bounds]]];
+```
+
+A view controller view can be added to the main window with the following listing.
+
+```objc
+[self.window addSubView: viewController.view];
+```
+
+Responsibilities of a window
+* Contains the application's visible content.
+* Listens for and delivers touch events to the views.
+* Passes orientation changes from the screen to the view controllers.
+* Listens for keyboard events.
 
 3.x UIKit MVC Design Pattern
 
-
+The UIApplication object is a singleton object that runs the application's main event loop and the application's lifecycle. It listens for system events, such as low memory warning, and user events, such as moving the application to the background and returning to the foreground. UIApplication delegate methods manage the lifecycle of the application.
 
 <p align="center">
   <img src="img/uikit/uikit-core-objects.svg" alt="uikit-core-objects" /> 
@@ -1484,7 +1577,6 @@ Animate a box from x: 70, y: 80 to x 200, y: 300. On completion, stop at start p
 }
 
 - (IBAction)start:(id)sender {
-    
     [UIView animateWithDuration:3.0
                                    delay:0.0
                                  options:(UIViewAnimationCurveEaseInOut | UIViewAnimationOptionAutoreverse)
@@ -1495,7 +1587,6 @@ Animate a box from x: 70, y: 80 to x 200, y: 300. On completion, stop at start p
                                   [self.blueBox setCenter:CGPointMake(70, 80)];
                               }];
 }
-
 @end
 ```
 
