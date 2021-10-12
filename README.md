@@ -1229,7 +1229,7 @@ In the code below, greenView is positioned relative to the frame of the viewcont
 Since both blueView and greenView have the same coordinates, (x:20, y:20) they are both drawn from the same point.
 
 <p align="center">
-  <img src="img/subview/blue-green-view.png" alt="blue-green-view/> 
+  <img src="img/subview/blue-green-view.png" alt="blue-green-view" /> 
 </p>
 
 ```objc
@@ -1265,6 +1265,7 @@ On adding greenView to blueView, greenView is positioned relative to its parent,
 <p align="center">
   <img src="img/subview/green-in-blue.png" alt="green-in-blue"/> 
 </p>
+
 
 ```objc
 #import "ViewController.h"
