@@ -1477,7 +1477,41 @@ The code listing below, centers a subview in its superview, by setting the view 
 ```
 
 
+3.x View ClipsToBounds
 
+<p align="center">
+  <img src="img/uikit/view-overlapping.png" alt="view-overlapping"/> 
+  <img src="img/uikit/view-clipped.png" alt="view-clipped"/> 
+</p>
+
+```objc
+#import "ViewController.h"
+
+@interface ViewController ()
+
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view, typically from a nib.
+    CGFloat width = self.view.bounds.size.width - 40;
+    CGFloat height = self.view.bounds.size.height - 40;
+    
+    UIView *grayView = [[UIView alloc] initWithFrame:CGRectMake(20.0, 20.0, width, height)];
+    grayView.backgroundColor = [UIColor grayColor];
+    [self.view addSubview:grayView];
+    
+    UIView *purpleView = [[UIView alloc] initWithFrame:CGRectMake(-20.0, 40.0, 100.0, 100.0)];
+    purpleView.backgroundColor = [UIColor purpleColor];
+    [grayView addSubview:purpleView];
+    
+    // clip overlap
+    grayView.clipsToBounds = YES;
+}
+@end
+```
 
 
 4. Core Animation
