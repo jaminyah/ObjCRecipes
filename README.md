@@ -1296,6 +1296,12 @@ On adding greenView to blueView, greenView is positioned relative to its parent,
 
 3.x Center a SubView in SuperView
 
+The code listing below, centers a subview in its superview, by setting the view to an intrinsic content size equal to the minimum of the bounds width and bounds height. Autolayout constraints, set in the view controller, positions the view at the center of the superview. In this way, the circle, which is drawn in the center of the view in both portrait and landscape mode.
+
+<p align="center">
+  <img src="img/center-circle.png" alt="center-circle"/> 
+</p>
+
 ```objc
 //  BlueView.m
 //  ViewProperties
