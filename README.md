@@ -1178,7 +1178,9 @@ typdef NSArray* (^algo_t)(NSMutableArray *);
 </p>
 
 
-3.x UIKit App Objects
+3.x UIKit MVC Design Pattern
+
+
 
 <p align="center">
   <img src="img/uikit/uikit-core-objects.svg" alt="uikit-core-objects" /> 
@@ -1258,7 +1260,7 @@ Since both blueView and greenView have the same coordinates, (x:20, y:20) they a
 @end
 ```
 
-3.x Add SubView to View's SubView
+3.x Add View to SubView
 
 On adding greenView to blueView, greenView is positioned relative to its parent, blueView, coordinate system.
 
@@ -1288,6 +1290,89 @@ On adding greenView to blueView, greenView is positioned relative to its parent,
     UIView *greenView = [[UIView alloc] initWithFrame:greenRect];
     greenView.backgroundColor = [UIColor greenColor];
     [self.blueView addSubview:greenView];
+}
+@end
+```
+
+3.x Center a SubView in SuperView
+
+```objc
+//  BlueView.m
+//  ViewProperties
+//  Reference: iOS Programming: The Big Nerd Ranch Guide
+
+#import "BlueView.h"
+
+@implementation BlueView
+
+- (void)drawRect:(CGRect)rect {
+    
+    CGRect bounds = self.bounds;
+    CGPoint midPoint;
+    midPoint.x = bounds.origin.x + bounds.size.width / 2.0;
+    midPoint.y = bounds.origin.y + bounds.size.height / 2.0;
+    float circleRadius = MIN(bounds.size.width - 10, bounds.size.height - 10) / 2.0;
+    
+    UIBezierPath *path = [[UIBezierPath alloc] init];
+    [path addArcWithCenter: midPoint
+                    radius:circleRadius
+                startAngle:0.0
+                  endAngle: M_PI * 2.0
+                 clockwise: YES
+     ];
+    path.lineWidth = 4;
+    [[UIColor blueColor] setStroke];
+    [path stroke];
+}
+
+// set a fixed content size so viewcontroller can center blueview in superview
+- (CGSize) intrinsicContentSize {
+    CGRect bounds = self.bounds;
+    
+    float dimension = MIN(bounds.size.width - 4, bounds.size.height - 4);
+    return CGSizeMake(dimension, dimension);
+}
+@end
+
+//  ViewController.m
+//  ViewProperties
+//  Reference: https://stackoverflow.com/questions/14011395/ios-position-uiview-in-center-of-superview-using-auto-layout-programmatically
+
+#import "ViewController.h"
+#import "BlueView.h"
+
+@interface ViewController ()
+@property (nonatomic, strong) UIView *blueView;
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    CGRect bounds = self.view.bounds;
+    self.blueView = [[BlueView alloc] initWithFrame:bounds];
+    self.blueView.backgroundColor = [UIColor whiteColor];
+    
+    self.blueView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:self.blueView];
+    
+    // center blueview in superview with autolayout constraints
+    NSLayoutConstraint *blueViewX = [NSLayoutConstraint constraintWithItem:self.blueView
+                                                                            attribute:NSLayoutAttributeCenterX
+                                                                            relatedBy:NSLayoutRelationEqual
+                                                                               toItem:self.view
+                                                                            attribute:NSLayoutAttributeCenterX
+                                                                           multiplier:1.0
+                                                                             constant:0];
+    NSLayoutConstraint *blueViewY = [NSLayoutConstraint constraintWithItem:self.blueView
+                                                                            attribute:NSLayoutAttributeCenterY
+                                                                            relatedBy:NSLayoutRelationEqual
+                                                                               toItem:self.view
+                                                                            attribute:NSLayoutAttributeCenterY
+                                                                           multiplier:1.0
+                                                                             constant:0];
+    [self.view addConstraints:@[blueViewX, blueViewY]];
 }
 @end
 ```
