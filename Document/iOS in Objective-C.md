@@ -1,19 +1,6 @@
 # iOS in Objective-C
 
-# Objective - C Recipes
-
-## References:
-1. Programming in Objective-C, 6th Edition
-2. https://www.journaldev.com/10182/nsarray-nsmutablearray-objective-c-array
-3. https://code.tutsplus.com/tutorials/understanding-objective-c-blocks--mobile-14319
-4. https://www.techotopia.com/index.php/An_iOS_7_Graphics_Tutorial_using_Core_Graphics_and_Core_Image
-5. https://stackoverflow.com/questions/31693328/draw-multiple-lines-core-graphics
-6. https://atozmath.com/example/CONM/Bisection.aspx?he=e&q=nr&ex=2
-7. https://stackoverflow.com/questions/1843251/difference-between-foundation-framework-and-core-foundation-framework
-8. https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFDesignConcepts/Articles/ObjectReferences.html
-9. Convert CFStringRef to C string: https://gist.github.com/emarashliev/8826629
-10. https://stackoverflow.com/questions/22839071/weakself-in-blocks
-11. https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/CoreAnimation_guide/CoreAnimationBasics/CoreAnimationBasics.html#//apple_ref/doc/uid/TP40004514-CH2-SW12
+## Table of Contents
 
 ```bash
 1. Compiling and Running
@@ -2099,7 +2086,7 @@ In the case of `animateWithDuration`, the animation stops when the uiview is dis
 
 4.3 Properties
 
-4.2.1 Copy storage semantics
+4.3.1 Copy storage semantics
 ```objc
 @property (nonatomic, copy) drawing_t drawingBlock; 
 ```
@@ -2108,6 +2095,286 @@ Use copy so that the block is moved to the heap and doesn't disappear when the s
 
 The autoreleasepool is a mechanism that allows the system to efficiently manage the memory your application uses as it creates new objects. Ownership of data is temporarily transferred to the run loop, for data that can be disposed at the end of the run loop cycle or should be claimed before the end of the loop cycle.
 
+4.3.2 Atomic property attribute
+
+```objc
+@property (strong, atomic) NSString *firstName;
+```
+Since the default attribute is atomic, adding atomic is not necessary.
+
+```objc
+@property (strong) NSString *firstName;
+```
+
+Atomic property attribute:
+
+```objc
+@synthesize firstName = _firstName;
+-(NSString *)firstName{
+    @synchronized (self) {
+        return _firstName;
+    }
+}
+-(void)setFirstName:(NSString *)firstName{
+    @synchronized (self) {
+        if(_firstName != firstName){
+            [_firstName release];
+            _firstName = [firstName retain];
+        }
+    }
+}
+```
+
+Nonatomic property attribute:
+
+```objc
+@property (strong, nonatomic) NSString *firstName;
+```
+
+```objc
+@synthesize firstName = _firstName;
+-(NSString *)firstName {
+    return _firstName;
+}
+-(void)setFirstName:(NSString *)firstName{
+    if(_firstName != firstName){
+        [_firstName release];
+        _firstName = [firstName retain];
+    }
+}
+```
+
+
+4.3.x Property Accessor Naming
+
+Property accessor names cannot begin with new.
+
+```objc
+// Incorrect
+@property NSString *newFeatureName;
+
+// Correct
+@property (getter=theNewFeatureName) NSString *newFeatureName;
+```
+
+4.x Property Attribute List
+
+* `strong` replaced `retain` attribute starting with iOS 4. `strong` is used with parent objects such as UI elements that are programmatically created. In the listing below, grayView and purpleView are both created programmatically instead of with Storyboard.
+
+<p align="center">
+  <img src="img/uikit/masktobounds-before.png" /> 
+  <img src="img/uikit/masktobounds-after.png" />
+</p>
+
+```objc
+#import "ViewController.h"
+
+@interface ViewController ()
+
+@property (strong, nonatomic) UIView *grayView;
+@property (strong, nonatomic) UIView *purpleView;
+
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+ 
+    CGRect frame = self.view.frame;
+    CGFloat width = CGRectGetWidth(frame) - 40;
+    CGFloat height = CGRectGetHeight(frame) - 40;
+    
+    self.grayView = [[UIView alloc] initWithFrame:CGRectMake(20.0, 20.0, width, height)];
+    self.grayView.backgroundColor = [UIColor grayColor];
+    self.grayView.layer.cornerRadius = 16;
+    [self.view addSubview:self.grayView];
+    
+    UIView *purpleView = [[UIView alloc] initWithFrame:CGRectMake(-20.0, 0.0, 100.0, 100.0)];
+    purpleView.backgroundColor = [UIColor purpleColor];
+    [self.grayView addSubview:purpleView];
+    
+    // clip overlap
+    self.grayView.clipsToBounds = YES;
+    
+    // or use masktobounds on the layer property
+    //self.grayView.layer.masksToBounds = YES;
+}
+@end
+```
+
+* `weak` replaced `assign` attribute starting with iOS 4. `weak` is most noticable with IBOutlets created from Storyboards. `weak` is also used with view delegates. If the parent object is deallocated this object is set to `nil`.
+
+```objc
+@property (weak, nonatomic) 
+```
+
+```objc
+#import "ViewController.h"
+
+@interface ViewController ()
+
+// weak is used with Storyboard UI components
+@property (weak, nonatomic) IBOutlet UIView *blueBox;
+
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self.blueBox setCenter:CGPointMake(70.0, 80.0)];
+}
+
+- (IBAction)start:(id)sender {
+    [UIView animateKeyframesWithDuration:3.0
+                                   delay:0.0
+                                 options: UIViewKeyframeAnimationOptionRepeat | UIViewKeyframeAnimationOptionAutoreverse
+                              animations:^{
+                                  [self.blueBox setCenter:CGPointMake(200, 300)];
+                              }
+                              completion: nil
+                            ];
+}
+@end
+```
+
+* `copy` can be used with classes that conform to the NSCopying protocol. These include NSString, NSArray, NSDictionary, NSAttributedString, NSData, NSValue.
+
+```objc
+#import "ViewController.h"
+#import "Computer.h"
+
+// private properties
+@interface ViewController ()
+
+@end
+
+@implementation ViewController
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    Computer *computer = [[Computer alloc] init];
+    NSMutableString *modelName = [NSMutableString stringWithFormat:@"Apple"];
+    
+    computer.model = modelName;
+    NSLog(@"computer brand: %@", computer.model);
+    
+    [modelName appendString:@", Corporation"];
+    NSLog(@"computer brand with copy attribute: %@", computer.model);
+    
+    NSMutableString *diagonalSize = [NSMutableString stringWithFormat:@"15.4"];
+    computer.screenSize = diagonalSize;
+    NSLog(@"screen size: %@", computer.screenSize);
+    
+    computer.screenSize = @"17";
+    NSLog(@"screen size with strong attribute: %@", computer.screenSize);
+                                     
+}
+
+@end
+```
+
+Output:
+
+```bash
+computer brand: Apple
+computer brand with copy attribute: Apple
+screen size: 15.4
+screen size with strong attribute: 17
+```
+
+Immutable collection types should have a `copy` property.
+
+```objc
+@property (copy, nonatomic) NSArray *array;
+```
+
+* `readonly` attribute allows the property to be set only once by its parent object. Other objects can only read the value of the property.
+
+```objc
+@interface Shoes: NSObject
+
+@property (readonly, nonatomic) float cost;
+@property (readonly, nonatomic) float size;
+
+@end
+```
+
+* `readwrite` is the default and so is not generally included in the @property declaration.
+
+```objc
+@interface ComputerMonitor: NSObject
+
+@property (nonatomic) int width;
+@property (nonatomic) int height;
+@property (readonly, nonatomic) int diagonal;
+
+@end
+```
+
+This is equivalent to getter and setter methods:
+
+```objc
+- (int) width;
+- (int) setWidth:(int)newValue;
+
+- (int) height;
+- (int) setHeight:(int)newValue;
+
+- (int) diagonal;
+```
+
+* `atomic` - a synthesized get accessor for an object property uses a lock and retains and autoreleases the returned value—the implementation will be similar to the following:
+
+Manual Retain Release
+
+```objc
+[_internal lock]; // lock using an object-level lock
+id result = [[value retain] autorelease];
+[_internal unlock];
+
+return result;
+```
+
+Automatic Reference Counting
+
+```objc
+[_internal lock];
+id result = value;
+[_internal unlock];
+```
+
+* `@synthesize` generated code:
+
+-(void) setValue: (id)value {
+    [value retain];
+    [_value release];
+    _value = value
+    [_value retain];
+    [value release];
+}
+
+* `@dynamic` is typically used when a property is being dynamically created at runtime. This is the case with NSManagedObject class. 
+
+```objc
+@interface MyClass : NSManagedObject
+
+@property(nonatomic, copy) NSString *value;
+
+@end
+
+@implementation MyClass
+
+@dynamic value;
+
+@end
+```
+
+Apple Document Reference - The Objective-C Programming Language
+
+"A managed object class has a corresponding schema that defines attributes and relationships for the class; at runtime, the Core Data framework generates accessor methods for these as necessary. You therefore typically declare properties for the attributes and relationships, but you don’t have to implement the accessor methods yourself and shouldn’t ask the compiler to do so. If you just declared the property without providing any implementation, however, the compiler would generate a warning. Using <em>@dynamic</em> suppresses the warning."
 
 4.4 Memory Profiler - Instruments
 
@@ -2355,10 +2622,170 @@ Draw2D.m Implementation file
 @end
 ```
 
-6. Difference Between
+5. Compiler @ directive
+
+Reference: https://journeytoiosdeveloper.wordpress.com/category/objective-c/
+
+Categories allow you to extend the behavior of existing classes by adding new class or instance methods. As a convention, categories are defined in their own .{h,m} files, like so:
+
+```objc
+MyObject+CategoryName.h
+
+@interface MyObject (CategoryName)
+– (void)foo;
+– (BOOL)barWithBaz:(NSInteger)baz;
+@end
+
+MyObject+CategoryName.m
+
+@implementation MyObject (CategoryName)
+– (void)foo {
+// …
+}
+
+– (BOOL)barWithBaz:(NSInteger)baz {
+return YES;
+}
+@end
+```
+
+Characteristics of Category
+* A category can be declared for any class, even if you don’t have the original implementation source code.
+* Any methods that you declare in a category will be available to all instances of the original class, as well as any subclasses of the original class.
+* At runtime, there’s no difference between a method added by a category and one that is implemented by the original class.
+* Even though any methods added by a category are available to all instances of the class and its subclasses, you’ll need to import the category header file in any source code file where you wish to use the additional methods, otherwise you’ll run into compiler warnings and errors.
+* Categories can be used to declare either instance methods or class methods but are not usually suitable for declaring additional properties. It’s valid syntax to include a property declaration in a category interface, but it’s not possible to declare an additional instance variable in a category. This means the compiler won’t synthesize any instance variable, nor will it synthesize any property accessor methods. You can write your own accessor methods in the category implementation, but you won’t be able to keep track of a value for that property unless it’s already stored by the original class.The only way to add a traditional property—backed by a new instance variable—to an existing class is to use a class extension.
+
+>  Categories are particularly useful for convenience methods on standard framework classes.
+
+* Extensions look like categories, but omit the category name. It’s often referred as anonymous categories or unnamed categories. These are typically declared before an @implementation to specify a private interface, and even override properties declared in the interface.
+The methods declared by a class extension are implemented in the implementation block for the original class, so you can’t, for example, declare a class extension on a framework class, such as a Cocoa or Cocoa Touch class like NSString..
+
+```objc
+@interface MyObject ()
+@property (readwrite, nonatomic, strong) NSString *name;
+– (void)doSomething;
+@end
+
+@implementation MyObject
+// …
+@end
+```
+
+Forward Class Declarations @class
+
+Occasionally, @interface declarations will reference an external class in a property or as a parameter type. Rather than adding #import statements for each class, it’s good practice to use forward class declarations in the header, and import them in the implementation. Shorter compile times, less chance of cyclical references; you should definitely get in the habit of doing this if you aren’t already.
+
+`@class` does not (usually) remove the need to #import files, it just moves the requirement down closer to where the information is useful.
+
+For Example:
+If you say @class myClass, the compiler knows that it may see something like:
+myClass *myObject;
+
+It doesn’t have to worry about anything other than myClass is a valid class, and it should reserve room for a pointer to it (really, just a pointer). Thus, in your header, @class suffices 90% of the time.
+However, if you ever need to create or access myObject’s members, you’ll need to let the compiler know what those methods are. At this point (presumably in your implementation file), you’ll need to #import “myClass.h”, to tell the compiler additional information beyond just “this is a class”.
+
+NOTE: #import brings the entire header file in question into the current file; any files that THAT file #imports are also included. @class, on the other hand, just tells the compiler “Hey, you’re going to see a new token soon; it’s a class, so treat it that way”.
+
+Protocols
+
+The beauty of protocols is that they allow programmers to design contracts that can be adopted outside of a class hierarchy. It’s the egalitarian mantra: that it doesn’t matter who you are, or where you come from: anyone can achieve anything if they work hard enough.
+
+…or at least that’s idea, right?
+
+@protocol…@end: Defines a set of methods to be implemented by any class conforming to the protocol, as if they were added to the interface of that class.
+
+Requirement Options
+
+You can further tailor a protocol by specifying methods as required or optional. Optional methods are stubbed in the interface, so as to be auto-completed in Xcode, but do not generate a warning if the method is not implemented. Protocol methods are required by default.
+
+The syntax for @required and @optional follows that of the visibility macros:
+
+@protocol CustomControlDelegate
+– (void)control:(CustomControl *)control didSucceedWithResult:(id)result;
+@optional
+– (void)control:(CustomControl *)control didFailWithError:(NSError *)error;
+@end
+
+Here is the syntax for class conforming to protocol
+
+@interface MyClass : NSObject
+…
+@end
+This means that any instance of MyClass will respond not only to the methods declared specifically in the interface, but that MyClass also provides implementations for the required methods in MyProtocol. There’s no need to redeclare the protocol methods in the class interface – the adoption of the protocol is sufficient.
+If you need a class to adopt multiple protocols, you can specify them as a comma-separated list. 
+
+Exception Handling
+
+Objective-C communicates unexpected state primarily through NSError. Whereas other languages would use exception handling for this, Objective-C relegates exceptions to truly exceptional behavior, including programmer error.
+
+@ directives are used for the traditional convention of try/catch/finally blocks:
+
+```objc
+@try{
+// attempt to execute the following statements
+[self getValue:&value error:&error];
+
+    // if an exception is raised, or explicitly thrown…
+    if (error) {
+        @throw exception;
+    }
+} @catch(NSException *e) {
+    // …handle the exception here
+} @finally {
+    // always execute this at the end of either the @try or @catch block
+    [self cleanup];
+}
+```
+Literals
+
+Literals are shorthand notation for specifying fixed values. Literals are more -or-less directly correlated with programmer happiness. By this measure, Objective-C has long been a language of programmer misery.
+
+Object Literals
+
+Until recently, Objective-C only had literals for NSString. But with the release of the Apple LLVM 4.0 compiler, literals for NSNumber, NSArray and NSDictionary were added, with much rejoicing.
+
+* @””: Returns an NSString object initialized with the Unicode content inside the quotation marks.
+* @42, @3.14, @YES, @’Z’: Returns an NSNumber object initialized with pertinent class constructor, such that @42 → [NSNumber numberWithInteger:42], or @YES → [NSNumber numberWithBool:YES]. 
+* Supports the use of suffixes to further specify type, like @42U → [NSNumber numberWithUnsignedInt:42U].
+* @[]: Returns an NSArray object initialized with the comma-delimited list of objects as its contents. It uses +arrayWithObjects:count: class constructor method, which is a more precise alternative to the more familiar +arrayWithObjects:. 
+* For example, @[@”A”, @NO, @2.718] → id objects[] = {@”A”, @NO, @2.718}; [NSArray arrayWithObjects:objects count:3].
+* @{}: Returns an NSDictionary object initialized with the specified key-value pairs as its contents, in the format: @{@”someKey” : @”theValue”}.
+* @(): Dynamically evaluates the boxed expression and returns the appropriate object literal based on its value (i.e. NSString for const char*, NSNumber for int, etc.). This is also the designated way to use number literals with enum values.
+
+Objective-C Literals
+
+Selectors and protocols can be passed as method parameters. @selector() and @protocol() serve as pseudo-literal directives that return a pointer to a particular selector (SEL) or protocol (Protocol *).
+
+@selector(): Returns an SEL pointer to a selector with the specified name. Used in methods like -performSelector:withObject:.
+@protocol(): Returns a Protocol * pointer to the protocol with the specified name. Used in methods like -conformsToProtocol:.
 
 
-6.1 Atomic vs non-atomic
+5. Design Patterns
+
+5.1 Singleton Pattern
+
+```objc
++ (instancetype)sharedInstance {
+  static id sharedInstance = nil;
+
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    sharedInstance = [[self alloc] init];
+  });
+
+  return sharedInstance;
+}
+```
+
+
+
+
+
+6. Comparison
+
+
+6.1 atomic vs non-atomic
 
 
 6.2 Class vs Instance Methods
@@ -2449,8 +2876,156 @@ CFArray - An opaque type for indexed-based collection functionality
 setNeedsLayout is a method of the UIView class that the view on which it is called and all its subviews. The redraw if performed asynchronously on the next draw update cycle.
 
 layoutIfNeeded, however, is a synchronous request for a redraw of the view on which it is called. As such the redraw occurs immediately and does not wait for the next draw update cycle.
+```objc
+import UIKit
+
+class ViewController: UIViewController {
+
+    @IBOutlet weak var blueHeight: NSLayoutConstraint!
+    
+    @IBAction func heightPressed(_ sender: AnyObject) {
+  
+        if (self.blueHeight.constant == 25.0)
+        {
+            self.blueHeight.constant = self.view.bounds.height - 100.0
+        }
+        else
+        {
+            self.blueHeight.constant = 25.0
+        }
+        UIView.animate(withDuration: 8.0, animations: {
+            //self.view.layoutIfNeeded()
+            self.view.setNeedsLayout()
+        }) 
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+    }
+```
+
+6.x InstanceType vs id
+
+"Use the `instancetype` keyword as the return type of methods that return an instance of the class they are called on. These methods include alloc, init, and class factory methods."
+instancetype provide better type safety than id.
+
+> Unlike id, the instancetype keyword can only be used as ther result type in a method declaration.
+
+Convert:
+
+```objc
+@interface Employee
+@property NSString *firstName;          // default property attribute is readwrite
+@property NSString *lastName;           // same as @property (readwrite) NSString *lastName;
+
+- (id) employeeWithFirstName: (NSString *) firstName last:(NSString *) lastName;
+@end
+```
+
+To:
+
+```objc
+@interface Employee
+- (instancetype) employeeWithFirstName: (NSString *) initFirstName lastName:(NSString *) initLastName;
+@end
+```
+
+Init Methods Template
+
+```objc
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    // ...
+  }
+  return self;
+}
+```
+
+Init Method Application
+
+```objc
+- (instancetype) employeeWithFirstName: (NSString *) initFirstName lastName:(NSString *) initLastName {
+
+    self = [super init];
+    if (self) {
+        _firstName = initFirstName;         // _firstName is the property backed instance variable 
+        _lastName = initLastName;
+    }
+
+    return self;
+}
+```
+
+
+@synthesize vs @dynamic
+`@synthesize` will generate getter and setter methods for your property.
+`@dynamic` tells the compiler that the getter and setter methods are implemented not by the class itself but somewhere else (like the superclass or will be provided at runtime).
+
+
+NSAutorelease vs Autorelease Pool Block
+
+Use of NSAutorelease pool is restricted to manual-retain-release (MRR) code base.
+```objc
+NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+// Code benefitting from a local autorelease pool.
+[pool drain];
+
+In ARC based code autorelease pools cannot be used directly. @autoreleasepool blocks should be used.
+
+@autoreleasepool {
+    // Code benefitting from a local autorelease pool.
+}
+```
+
+"@autoreleasepool blocks are more efficient than using an instance of NSAutoreleasePool directly; you can also use them even if you do not use ARC."
+
+"Autorelease pool blocks provide a mechanism whereby you can relinquish ownership of an object, but avoid the possibility of it being deallocated immediately (such as when you return an object from a method). Typically, you don’t need to create your own autorelease pool blocks, but there are some situations in which either you must or it is beneficial to do so."
+
+Objects that receive an `autorelease` message are sent to the autorelease pool. Each
 
 
 
 6.15 HTTP vs HTTP2
 
+
+## Glossary
+
+* Polymorphism - The ability of different objects to respond to identical messages.
+
+* Dynamic Typing - The class of an object is determined at runtime instead of at compile time.
+
+* Dynamic Binding - The method to be called (invoked) on an object is determined at runtime.
+
+* Dynamic Loading - Adding new components to a program as it runs.
+
+* extern - Used to refer to a variable that is declared in a different file. The declaration must also use keyword `extern` for compiler linking.
+```objc
+extern int indexPosition;
+```
+
+* volatile - The value of the variable can be changed from outside of the program.
+
+* static - In a function the variable is not garbage collected at the end of functin execution. Its value persists between function calls. As a variable external to a function body, a static variable behaves as a global variable which is scope to the file in which it is declared.
+
+* instance variable - is a variable that exists and hold its value for the life of the object. Memory for instance variables is allocated when the object is first with the alloc method. Memory is released when the object is deallocated.
+
+
+## References:
+1. Programming in Objective-C, 6th Edition
+2. https://www.journaldev.com/10182/nsarray-nsmutablearray-objective-c-array
+3. https://code.tutsplus.com/tutorials/understanding-objective-c-blocks--mobile-14319
+4. https://www.techotopia.com/index.php/An_iOS_7_Graphics_Tutorial_using_Core_Graphics_and_Core_Image
+5. https://stackoverflow.com/questions/31693328/draw-multiple-lines-core-graphics
+6. https://atozmath.com/example/CONM/Bisection.aspx?he=e&q=nr&ex=2
+7. https://stackoverflow.com/questions/1843251/difference-between-foundation-framework-and-core-foundation-framework
+8. https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFDesignConcepts/Articles/ObjectReferences.html
+9. Convert CFStringRef to C string: https://gist.github.com/emarashliev/8826629
+10. https://stackoverflow.com/questions/22839071/weakself-in-blocks
+11. https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/CoreAnimation_guide/CoreAnimationBasics/CoreAnimationBasics.html#//apple_ref/doc/uid/TP40004514-CH2-SW12
+12. https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/OOP_ObjC/Articles/ooObjectModel.html
+13. https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ObjectiveC/Chapters/ocProperties.html
